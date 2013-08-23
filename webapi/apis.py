@@ -352,8 +352,8 @@ def friends(request):
     
     elif request.method == 'DELETE':
         try:
-            uid = request.GET['uid']
-            friend_id = request.GET['fid']
+            uid = request.GET['user_id']
+            friend_id = request.GET['friend_id']
             
             models.friends.objects.filter(user_id=user_id, friend_id=friend_id).delete()
             models.friends.objects.filter(friend_id=user_id, user_id=friend_id).delete()
