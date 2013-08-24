@@ -194,23 +194,6 @@ class activityTest(TestCase):
         self.assertEqual(response['activity']['activity_id'],1,"id should be 1")
         pass
     
-    def test_invalidAccess(self):
-        paraDict = dict(self.createRequest)
-        paraDict['access_token'] = "notvalidtoken"
-        response = self.c.post(API_ACTIVITY_URL,data=json.dumps(paraDict),content_type='application/json')
-        print '\nactivityTest: test_invalidAccess - post '+ str(response)
-        self.assertEqual(response.status_code, 200, msg='Response error status code')
-        response = json.loads(response.content)
-        self.assertEqual(response['return_code'], -1, 'return_code should be -1')
-        self.assertEqual(response['error'], SYSMessages.SYSMESSAGE_ERROR_INVALIDACCESS, 'error should be Invalid access token')
-        paraDict['type']='friends'
-        response = self.c.get(API_ACTIVITY_URL,data=paraDict)
-        print '\nactivityTest: test_invalidAccess - get'+ str(response)
-        self.assertEqual(response.status_code, 200, msg='Response error status code')
-        response = json.loads(response.content)
-        self.assertEqual(response['return_code'], -1, 'return_code should be -1')
-        self.assertEqual(response['error'],SYSMessages.SYSMESSAGE_ERROR_INVALIDACCESS, 'error should be Invalid access token')
-    
     def test_getActivity(self):
         response = self.c.get(API_ACTIVITY_URL,data=self.getRequest)
         print '\nactivityTest: test_invalidAccess '+ str(response)
