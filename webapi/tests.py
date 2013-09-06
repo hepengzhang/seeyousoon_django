@@ -39,7 +39,6 @@ class registerTest(TestCase):
         self.assertEqual(response.status_code, 200, msg='Response error status code')
         response = json.loads(response.content)
         print response
-        self.assertEqual(response['return_code'], 1, 'return_code should be 1')
         self.assertIsNotNone(response['access_token'], 'access_token should not be null')
         fields = response['user_info']
         self.assertTrue('user_info' in response, "return doesn't contain user_info")
@@ -61,10 +60,9 @@ class registerTest(TestCase):
         self.assertEqual(len(info), 0, 'should not exist in database user_info')
         c.post(API_REGISTER_URL, data=json.dumps(paraDict), content_type='application/json')
         response = c.post(API_REGISTER_URL, data=json.dumps(paraDict), content_type='application/json')
-        self.assertEqual(response.status_code, 200, msg='Response error status code')
-        response = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content, "Username exists.")
         print '\ntest_alreadyExist:' + str(response)
-        self.assertEqual(response['return_code'], -1, 'return_code should be -1')
         pass
 
 class loginTest(TestCase):
@@ -92,7 +90,6 @@ class loginTest(TestCase):
         print '\nloginTest:test_correctLogin:'+ str(response)
         self.assertEqual(response.status_code, 200, msg='Response error status code')
         response = json.loads(response.content)
-        self.assertEqual(response['return_code'], 1, 'return_code should be 1')
         self.assertIsNotNone(response['access_token'], 'access_token should not be null')
         fields = response['user_info']
         self.assertTrue('user_info' in response, "return doesn't contain user_info")
@@ -102,19 +99,15 @@ class loginTest(TestCase):
     def test_userNotExist(self):
         response = self.c.post(API_LOGIN_URL, data=json.dumps(self.userNotExist), content_type='application/json')
         print '\nloginTest:test_userNotExist: '+ str(response)
-        self.assertEqual(response.status_code, 200, msg='Response error status code')
-        response = json.loads(response.content)
-        self.assertEqual(response['return_code'], -1, 'return_code should be -1')
-        self.assertEqual(response['error'], "Username usernotexist does not exist.", "should return user not exist message")
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.content, "Username usernotexist does not exist.")
         pass
     
     def test_wrongPassword(self):
         response = self.c.post(API_LOGIN_URL, data=json.dumps(self.wrongPassword), content_type='application/json')
         print '\nloginTest:test_wrongPassword: '+ str(response)
-        self.assertEqual(response.status_code, 200, msg='Response error status code')
-        response = json.loads(response.content)
-        self.assertEqual(response['return_code'], -1, 'return_code should be -1')
-        self.assertEqual(response['error'], "Wrong password", "should return wrong password")
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.content, "Wrong password")
         pass
     
     def test_lastLoginChanged(self):
@@ -139,10 +132,9 @@ class checkUsernameTest(TestCase):
     def test_nonexistUser(self):
         response = self.c.get(API_CHECKUSERNAME_URL, self.nonexistUser)
         print '\ncheckUsernameTest:test_nonexistUser: '+ str(response)
-        self.assertEqual(response.status_code, 200, msg='Response error status code')
+        self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
-        self.assertEqual(response['return_code'], 1, 'return_code should be 1')
-        self.assertEqual(response['message'], "Username available", "should return available")
+        self.assertEqual(response['available'], True)
         pass
         
     def test_existUser(self):
@@ -151,8 +143,7 @@ class checkUsernameTest(TestCase):
         print '\ncheckUsernameTest:test_existUser: '+ str(response)
         self.assertEqual(response.status_code, 200, msg='Response error status code')
         response = json.loads(response.content)
-        self.assertEqual(response['return_code'], -1, 'return_code should be -1')
-        self.assertEqual(response['error'], "Username exists")
+        self.assertEqual(response['available'], False)
         pass
     
 class activityTest(TestCase):
@@ -189,7 +180,6 @@ class activityTest(TestCase):
         print '\nactivityTest:createActivitySuccessTest '+ str(response)
         self.assertEqual(response.status_code, 200, msg='Response error status code')
         response = json.loads(response.content)
-        self.assertEqual(response['return_code'], 1, 'return_code should be 1')
         self.assertTrue('activity' in response, "return doesn't contain activity")
         self.assertEqual(response['activity']['activity_id'],1,"id should be 1")
         pass
@@ -197,12 +187,9 @@ class activityTest(TestCase):
     def test_getActivity(self):
         response = self.c.get(API_ACTIVITY_URL,data=self.getRequest)
         print '\nactivityTest: test_invalidAccess '+ str(response)
-        self.assertEqual(response.status_code, 200, msg='Response error status code')
+        self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
-        self.assertEqual(response['return_code'], 1, 'return_code should be 1')
-        self.assertTrue('activities' in response, "return doesn't contain activities")
-        self.assertTrue(isinstance(response['activities'], list),"should be array")
-        
+        self.assertTrue(isinstance(response, list))
         pass
      
 class friendsTest(TestCase):
@@ -234,8 +221,7 @@ class friendsTest(TestCase):
         print '\n friendsTest: test_sendFriendRequest - post '+ str(response)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
-        self.assertEqual(response['return_code'], 1)
-        self.assertEqual(response['message'], SYSMessages.SYSMESSAGE_SUCCESS_FRIENDREQUEST)
+        self.assertEqual(response['message'], "success")
         friend = models.friends.objects.filter(user_id=self.user1['user_id'],friend_id=self.user2['user_id'],status=0)
         self.assertEqual(friend.count(), 1)
 
@@ -246,8 +232,7 @@ class friendsTest(TestCase):
         response = self.c.post(API_FRIEND_URL, json.dumps(request), 'application/json')
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
-        self.assertEqual(response['return_code'], 1)
-        self.assertEqual(response['message'], SYSMessages.SYSMESSAGE_SUCCESS_FRIENDREQUEST)
+        self.assertEqual(response['message'], "success")
         friend = models.friends.objects.filter(user_id=self.user1['user_id'],friend_id=self.user2['user_id'],status=1)
         self.assertEqual(friend.count(), 1)
     
@@ -263,14 +248,13 @@ class friendsTest(TestCase):
         print '\n friendsTest: test_getFriends - get '+ str(response)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
-        self.assertEqual(response['return_code'], 1)
-        self.assertIsNotNone(response['results'])
-        self.assertEqual(len(response['results']), 1)
+        self.assertIsNotNone(response)
+        self.assertEqual(len(response), 1)
         user2 = models.user_info.objects.get(pk=2)
         user2 = json.dumps(user2, default=SYSEncoder.encode_models)
         user2 = json.loads(user2)
         self.maxDiff = None
-        self.assertDictEqual(user2, response['results'][0])
+        self.assertDictEqual(user2, response[0])
         
 class commentsTest(TestCase):
     
@@ -298,12 +282,14 @@ class commentsTest(TestCase):
     getcomments = {"activity_id":1,
                    "user_id":1,
                    "access_token":'testaccess',
-                   "offset":0
+                   "offset":0,
+                   "number":50
                    }
     deletecomment = {"activity_id":1,
                      "user_id":1,                     
                      "access_token":'testaccess',
                      "comment_id":1,
+                     "number":50
                      }
     def setUp(self):
         self.c.post(API_REGISTER_URL, data=json.dumps(self.user1),content_type='application/json')
@@ -319,7 +305,6 @@ class commentsTest(TestCase):
         print '\n commentTest: createComment - post '+ str(response)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
-        self.assertEqual(response['return_code'], 1)
         comment = models.comments.objects.all()
         self.assertEqual(comment.count(),1)
         self.assertEqual(comment[0].creator_id,1)
@@ -338,7 +323,6 @@ class commentsTest(TestCase):
         print '\n commentTest: getComments - get '+ str(response)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
-        self.assertEqual(response['return_code'], 1)
         self.assertEqual(len(response['comments']), 2)
         self.assertEqual(response['comments'][0]['contents'], self.comments2['contents'])
         self.assertEqual(response['comments'][0]['creator_id'], self.comments2['user_id'])
@@ -356,7 +340,6 @@ class commentsTest(TestCase):
         print '\n commentTest: delete Comments - delete '+ str(response)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
-        self.assertEqual(response['return_code'], 1)
         comments = models.comments.objects.filter(activity_id=1)
         self.assertEqual(comments.count(), 1)
         self.assertEqual(comments[0].creator_id, 2)

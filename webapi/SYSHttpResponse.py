@@ -1,4 +1,4 @@
-from django.http.response import HttpResponse, HttpResponseBadRequest
+from django.http.response import HttpResponse
 from webapi import SYSEncoder
 import simplejson as json
 
@@ -7,9 +7,9 @@ def jsonResponse(result):
 
 class JSONResponse(HttpResponse):
     def __init__(self, response):
-        super(JSONResponse, self).__init__(jsonResponse(response),content_type='application/json; charset=utf-8')
+        super(JSONResponse, self).__init__(jsonResponse(response),content_type='application/json')
 
-class JSONResponseBadRequest(HttpResponseBadRequest):
-    def __init__(self, message):
-        super(JSONResponseBadRequest, self).__init__(message)
+class JSONResponse4xx(HttpResponse):
+    def __init__(self, message, status=400):
+        super(JSONResponse4xx, self).__init__(message, status=status)
 

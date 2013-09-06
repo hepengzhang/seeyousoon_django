@@ -4,16 +4,10 @@ from django.core.signing import Signer
 import pyapns
 from webapi import models
 from webapi import SYSExceptions, SYSMessages
-from webapi.SYSHttpResponse import JSONResponse, JSONResponseBadRequest
+from webapi.SYSHttpResponse import JSONResponse, JSONResponse4xx
 
 
 ###aux function###
-def JSONResponseError(code, message):
-    return JSONResponse({'return_code':code, 'error':message})
-
-def JSONResponseSuccess(code, message):
-    return JSONResponse({'return_code':code, 'message':message})
-
 def verify_access(request):
     userID = None
     access_token = None
@@ -50,9 +44,9 @@ def handleError(fn):
         try:
             return fn(*args)
         except KeyError as e:
-            return JSONResponseBadRequest('Missing parameter: '+str(e))
+            return JSONResponse4xx('Missing parameter: '+str(e),400)
         except Exception as e:
-            return JSONResponseBadRequest('Server JSONResponseError:'+str(type(e))+' '+str(e))
+            return JSONResponse4xx('Server JSONResponseError:'+str(type(e))+' '+str(e),500)
     return newfunction
 
 def verify(fn):
@@ -61,12 +55,18 @@ def verify(fn):
             verify_access(*args)
             return fn(*args)
         except SYSExceptions.invalidAccess as e:
-            return JSONResponseError(-1, e.msg)
+            return JSONResponse4xx(e.msg, 401)
     return newFunction
 
 @handleError
 def root(request):
-    paraDict = json.loads(request.body)
+
+    paraDict = {'a':'a',
+            'b':True,
+            'c':False,
+            'd':1,
+            'e':None}
+    
     return JSONResponse(paraDict)
 
 
@@ -82,17 +82,17 @@ def login(request):
         auth = None
         if 'fb_id' in paraDict:
             info = models.user_info.objects.filter(fb_id=paraDict['fb_id'])
-            if len(info) != 1: return JSONResponseError(-1,u"Facebook id "+paraDict['fb_id']+" not linked.")
+            if len(info) != 1: return JSONResponse4xx(u"Facebook id "+paraDict['fb_id']+" not linked.", 404)
             info = info[0]
         elif 'wb_id' in paraDict:
             info = models.user_info.objects.filter(fb_id=paraDict['wb_id'])
-            if len(info) != 1: return JSONResponseError(-1,u"Weibo id "+paraDict['wb_id']+" not linked.")
+            if len(info) != 1: return JSONResponse4xx(u"Weibo id "+paraDict['wb_id']+" not linked.", 404)
             info = info[0]
         elif 'username' in paraDict:
             auth = models.user_auth.objects.select_related().filter(username=paraDict['username'])
-            if len(auth) != 1: return JSONResponseError(-1,u"Username "+paraDict['username']+" does not exist.")
+            if len(auth) != 1: return JSONResponse4xx(u"Username "+paraDict['username']+" does not exist.", 404)
             auth = auth[0] 
-            if auth.password != paraDict['password']: return JSONResponseError(-1,"Wrong password")
+            if auth.password != paraDict['password']: return JSONResponse4xx("Wrong password", 401)
             info = auth.user
         
         ##update access_token
@@ -107,13 +107,12 @@ def login(request):
         info.save()
        
         result = {"user_info":info,
-                  "access_token":auth.access_token,
-                  "return_code":1}
+                  "access_token":auth.access_token}
         
         return JSONResponse(result)
 
     else:
-        return JSONResponseBadRequest(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE)
+        return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE, 501)
 
 @handleError
 def register(request):
@@ -121,7 +120,7 @@ def register(request):
         paraDict = json.loads(request.body)
         exist = models.user_auth.objects.filter(username=paraDict['username']).exists()
         if exist:
-            return JSONResponseError(-1,"Username exists.")
+            return JSONResponse4xx("Username exists.", 400)
         
         ### user_info
         info = models.user_info(email=paraDict['email'],
@@ -149,8 +148,7 @@ def register(request):
         
         ### retrieve
         result = {"user_info":info,
-                  "access_token":auth.access_token,
-                  "return_code":1}
+                  "access_token":auth.access_token}
         
         return JSONResponse(result)
     else:
@@ -162,9 +160,12 @@ def checkUsername(request):
     if request.method == 'GET':
         user = models.user_auth.objects.filter(username=request.GET['username'])
         r = len(user)
-        return JSONResponseError(-1,"Username exists") if r>0 else JSONResponseSuccess(1,"Username available")
+        result = {'username':request.GET['username']}
+        result['available'] = False if r>0 else True
+        
+        return JSONResponse(result)
     else:
-        return JSONResponseBadRequest(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE)
+        return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE, 501)
 
 @handleError
 @verify
@@ -172,7 +173,7 @@ def activity(request):
     if request.method == 'GET':
         result = None;
         if request.GET['type']=='nearby':#return all nearby public activities
-            return JSONResponseBadRequest(SYSMessages.SYSMESSAGE_ERROR_NOTIMPLEMENTED)
+            return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_NOTIMPLEMENTED, 501)
         if request.GET['type']=='friends':#return all friends's visible activities
             uid = request.GET['user_id']
             dtformat = '%Y%m%d%H%M%S'
@@ -187,9 +188,8 @@ def activity(request):
                                                           access__lt=2)
             activities = queryset.order_by('-activity_created_date')[:50]
             activities = [a for a in activities]
-            result = {"activities":activities,
-                      "return_code":1}
-            return JSONResponse(result)
+            
+            return JSONResponse(activities)
 
     elif request.method == "POST":
         paraDict = json.loads(request.body)
@@ -216,11 +216,10 @@ def activity(request):
                 SYSNotify(user_id, u"You are invited to a new event")
             models.participants.objects.create(activity=activity_id,participant=paraDict['user_id'],status=1)
         
-        result = {"return_code":1,
-                  "activity":activity}
+        result = {"activity":activity}
         return JSONResponse(result)
     else:
-        return JSONResponseBadRequest(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE)
+        return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE, 501)
 
 @handleError
 @verify
@@ -228,14 +227,15 @@ def comments(request):
     
     if request.method == 'GET':
         offset = int(request.GET['offset'])
+        number = int(request.GET['number'])
         activity_id = request.GET['activity_id']
         results = models.comments.objects.filter(activity_id=activity_id)
-        results = results.order_by('-created_date')[offset:offset+50]
+        results = results.order_by('-created_date')[offset:offset+number]
         results = [a for a in results]
         
-        results = {"return_code":1,
-                   "comments":results,
-                   "offset":offset}
+        results = {"comments":results,
+                   "offset":offset,
+                   "number":len(results)}
         
         return JSONResponse(results)
         
@@ -250,8 +250,7 @@ def comments(request):
         activity.num_of_comments += 1
         activity.save()
         
-        result = {"return_code":1}
-        return JSONResponse(result)
+        return JSONResponse({'message':'success'})
     elif request.method == 'DELETE':
         user_id = request.GET['user_id']
         comment_id = request.GET['comment_id']
@@ -262,10 +261,9 @@ def comments(request):
         activity.num_of_comments -= 1
         activity.save()
         
-        result = {"return_code":1}
-        return JSONResponse(result)
+        return JSONResponse({'message':'success'})
     else:
-        return JSONResponseBadRequest(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE)
+        return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE, 501)
     
 @handleError
 # @verify
@@ -281,14 +279,11 @@ def friends(request):
             queryset = models.friends.objects.select_related().filter(user_id=uid,status__gt=0)
             results = [friends.friend for friends in queryset]
             
-        if get_type == 'request':#return request sent to this user
+        if get_type == 'requests':#return request sent to this user
             queryset = models.friends.objects.select_related().filter(friend_id=uid,status=0)
             results = [friends.user for friends in queryset]
             models.push_notification.objects.filter(user_id=uid).update(friend_requests=0)
             
-        results = {"return_code":1,
-                  "type":get_type,
-                  "results":results}
         return JSONResponse(results)
 
     elif request.method == 'POST':#respond to friend request and send friend request
@@ -299,15 +294,15 @@ def friends(request):
         
         #get friend user_id
         r = models.user_auth.objects.filter(username=paraDict['friend_username'])
-        if len(r) < 1: return JSONResponseError(-1,u"Username doesn't exist.")
+        if len(r) < 1: return JSONResponse4xx(u"Username doesn't exist.", 404)
         requested_user = r[0]
-        if str(requested_user.user_id)==str(user_id): return JSONResponseError(-1,u"You're sending request to yourself.")
+        if str(requested_user.user_id)==str(user_id): return JSONResponse4xx(u"You're sending request to yourself.", 422)
         #initial status should be 0
         status = 0
         #check on self
         count = models.friends.objects.filter(user_id=user_id, friend_id=requested_user.user_id).count()
         if count > 0: 
-            return JSONResponseSuccess(1, SYSMessages.SYSMESSAGE_SUCCESS_FRIENDREQUEST)
+            return JSONResponse({'message':'success'})
         #check on friend
         count = models.friends.objects.filter(user_id=requested_user.user_id, friend_id=user_id).count()
         if count > 0: status = 1
@@ -330,7 +325,7 @@ def friends(request):
             else :
                 SYSNotify(requested_user.user_id, u"Your friend request has been accepted.")
         
-        return JSONResponseSuccess(1, SYSMessages.SYSMESSAGE_SUCCESS_FRIENDREQUEST)
+        return JSONResponse({'message':'success'})
     
     elif request.method == 'DELETE':
         uid = request.GET['user_id']
@@ -339,10 +334,10 @@ def friends(request):
         models.friends.objects.filter(user_id=user_id, friend_id=friend_id).delete()
         models.friends.objects.filter(friend_id=user_id, user_id=friend_id).delete()
         
-        return JSONResponseSuccess(1,"JSONResponseSuccess")
+        return JSONResponse({'message':'success'})
     
     else:
-        return JSONResponseBadRequest(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE)
+        return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE,501)
 
 @handleError
 def searchUser(request):
@@ -354,17 +349,15 @@ def searchUser(request):
             users_ids = [q.user_id for q in query]
             users = models.user_info.objects.filter(user_id__in=users_ids)
             users = [u for u in users]
-            result = {"return_code":1,
-                      "results":users}
-            return JSONResponse(result)
+            return JSONResponse(users)
     else:
-        return JSONResponseBadRequest(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE)
+        return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE, 501)
 
 @handleError
 @verify
 def userActivities(request):
     if request.method == 'GET':#return search result
-        uid = request.GET['uid']
+        uid = request.GET['target_id']
         dtformat = '%Y%m%d%H%M%S'
         timeMin = datetime.strptime(request.GET['min_date'], dtformat)
         timeMax = datetime.strptime(request.GET['max_date'], dtformat)
@@ -372,24 +365,22 @@ def userActivities(request):
         queryset = models.activities.objects.select_related().filter(creator_id=uid, activity_created_date__range=(timeMin,timeMax),access__lt=2)
         activities = queryset.order_by('-activity_created_date')[:50]
         activities = [a for a in activities]
-        result = {"activities":activities,
-                  "return_code":1}
-        return JSONResponse(result)
+        return JSONResponse(activities)
     else:
-        return JSONResponseBadRequest(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE)
+        return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE,501)
 
 @handleError
 @verify
 def userLocation(request):
-    if request.method == 'POST':#return search result
+    if request.method == 'POST':
         paraDict = json.loads(request.body)
         user_id = paraDict['user_id']
         longitude = paraDict['longitude']
         latitude = paraDict['latitude']
         models.user_info.objects.filter(user_id=user_id).update(longitude=longitude, latitude=latitude)
-        return JSONResponseSuccess(1, SYSMessages.SYSMESSAGE_SUCCESS_UPDATELOCATION)
+        return JSONResponse({'message':'success'})
     else:
-        return JSONResponseBadRequest(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE)
+        return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE, 501)
 
 @handleError
 @verify
@@ -410,10 +401,9 @@ def userNotification(request):
             push_notification = models.push_notification.objects.get(user_id=user_id)
             query.update(device_id=device_id, push_token=push_token, config=config)
         
-        result = {"return_code":1, 
-                  "push_info":push_notification}
+        result = {"push_info":push_notification}
         return JSONResponse(result);
     else:
-        return JSONResponseBadRequest(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE)
+        return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_UNKNOWNROUTE,501)
 
 
