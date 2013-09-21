@@ -176,15 +176,16 @@ def activity(request):
             return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_NOTIMPLEMENTED, 501)
         if request.GET['type']=='friends':#return all friends's visible activities
             uid = request.GET['user_id']
-            dtformat = '%Y%m%d%H%M%S'
-            timeMin = datetime.strptime(request.GET['min_date'], dtformat)
-            timeMax = datetime.strptime(request.GET['max_date'], dtformat)
+            
+            timeMin = request.GET['min_date'];
+            timeMax = request.GET['max_date'];
             
             user_self = models.user_info.objects.get(pk=uid)
             friendsList = models.friends.objects.filter(user=user_self, status__gt=0).values_list('friend_id',flat=True)
             friendsList = [uid] + list(friendsList)
             queryset = models.activities.objects.select_related().filter(creator__in=friendsList,
-                                                          activity_created_date__range=(timeMin,timeMax),
+                                                          activity_created_date__gt=timeMin,
+                                                          activity_created_date__lt=timeMax,
                                                           access__lt=2)
             activities = queryset.order_by('-activity_created_date')[:50]
             activities = [a for a in activities]
@@ -199,8 +200,10 @@ def activity(request):
         if 'type' in paraDict: activity.type=paraDict['type']
         if 'status' in paraDict: activity.status=paraDict['status']
         if 'description' in paraDict: activity.description=paraDict['description']
-        if 'start_date' in paraDict: activity.start_date=paraDict['start_date']
-        if 'end_date' in paraDict: activity.end_date=paraDict['end_date']
+        
+        dtformat = "%Y-%m-%dT%H:%M:%S"
+        if 'start_date' in paraDict: activity.start_date=datetime.strptime(paraDict['start_date'], dtformat)
+        if 'end_date' in paraDict: activity.end_date=datetime.strptime(paraDict['end_date'], dtformat)
         if 'latitude' in paraDict: activity.latitude=paraDict['latitude']
         if 'longitude' in paraDict: activity.longitude=paraDict['longitude']
         if 'destination' in paraDict: activity.destination=paraDict['destination']
@@ -358,11 +361,12 @@ def searchUser(request):
 def userActivities(request):
     if request.method == 'GET':#return search result
         uid = request.GET['target_id']
-        dtformat = '%Y%m%d%H%M%S'
-        timeMin = datetime.strptime(request.GET['min_date'], dtformat)
-        timeMax = datetime.strptime(request.GET['max_date'], dtformat)
-        
-        queryset = models.activities.objects.select_related().filter(creator_id=uid, activity_created_date__range=(timeMin,timeMax),access__lt=2)
+        timeMin = request.GET['min_date'];
+        timeMax = request.GET['max_date'];        
+        queryset = models.activities.objects.select_related().filter(creator_id=uid, 
+                                                                     activity_created_date__lt=timeMax,
+                                                                     activity_created_date__gt=timeMin,
+                                                                     access__lt=2)
         activities = queryset.order_by('-activity_created_date')[:50]
         activities = [a for a in activities]
         return JSONResponse(activities)
