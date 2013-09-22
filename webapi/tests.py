@@ -165,8 +165,8 @@ class activityTest(TestCase):
         self.access_token = response['access_token']
         self.createRequest = {
                        "user_id":user_id,
-                       "min_date":"20110516150000",
-                       "max_date":"20140516150000",
+                       "min_date":"2011-05-16T15:00:00",
+                       "max_date":"2014-05-16T15:00:00",
                        "access_token":self.access_token,
                        "keyword":"food",
                        "access":0
