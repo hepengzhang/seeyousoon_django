@@ -5,11 +5,11 @@ Hepeng's Dev IDE: Eclipse+PyDev
 Current Server structure:
 * EC2 instance: AWS Micro Linux AMI
 * database: AWS RDS(mysql)
-* web server: Apache + mod_wsgi + Django
+* web server: Nginx + uwsgi + Django 1.5.1
     
 Desired structure:
 
-- Try to switch to Nginx + uwsgi + Django   [ ]
+- Try to switch to Nginx + uwsgi + Django   [ Done ]
 - Continuous deployment?
 
 Edit README.md to specify your task here.
