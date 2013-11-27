@@ -1,11 +1,10 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import patterns, url, include
 from webapi import apis
 
+from webapi.Controllers import RootViews
 urlpatterns = patterns('',
-    url(r'^$', apis.root, name='root'),
-    url(r'^login$', apis.login, name='login'),
-    url(r'^register$', apis.register, name='register'),
-    url(r'^register/checkUsername$', apis.checkUsername, name='checkUsername'),
+    url(r'^$', RootViews.RootView.as_view(), name='root'),
+    url(r'^auth/', include('webapi.Controllers.AuthControllers.urls'), name='auth'),
     url(r'^activity$', apis.activity, name='avtivity'),
     url(r'^activity/comments$',apis.comments, name='comments'),
 #    url(r'^activity/(?P<actv_id>d+)$',apis.actvinfo, name='activity_info'),

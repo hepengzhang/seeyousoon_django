@@ -8,11 +8,11 @@ Replace this with more appropriate tests for your application.
 from django.test import TestCase
 from django.test.client import Client, RequestFactory
 import simplejson as json
-from webapi import models, SYSMessages,SYSEncoder, apis
+from webapi import models, SYSEncoder, apis
 
-API_LOGIN_URL = "/webapi/login"
-API_REGISTER_URL = "/webapi/register"
-API_CHECKUSERNAME_URL = "/webapi/register/checkUsername"
+API_LOGIN_URL = "/webapi/auth/login"
+API_REGISTER_URL = "/webapi/auth/register"
+API_CHECKUSERNAME_URL = "/webapi/auth/checkUsername"
 API_ACTIVITY_URL = "/webapi/activity"
 API_FRIEND_URL = "/webapi/friends"
 API_COMMENT_URL = "/webapi/activity/comments"

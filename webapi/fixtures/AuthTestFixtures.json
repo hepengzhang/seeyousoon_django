@@ -1,0 +1,38 @@
+[
+  {
+    "pk": 1,
+    "model": "webapi.user_info",
+    "fields": {
+      "username": "hepengzhang",
+      "primary_sns": 0,
+      "wb_id": 1923812832,
+      "name": "",
+      "user_created_date": "2013-08-09T03:13:40",
+      "phone": "918381922",
+      "gender": 0,
+      "fb_id": 381723731,
+      "longitude": "0E-8",
+      "user_access": 0,
+      "last_login": "2013-11-26T05:27:52",
+      "latitude": "0E-8",
+      "email": "AuthTest@test.com"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "webapi.user_auth",
+    "fields": {
+      "username": "hepengzhang",
+      "access_token": "cVXvaGH7Hg_Bkvu0ha2cpZfR_SQ",
+      "password": "testpasswordAuth"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "webapi.user_search",
+    "fields": {
+      "username": "AuthTest",
+      "name": "Hepeng Zhang"
+    }
+  }
+]

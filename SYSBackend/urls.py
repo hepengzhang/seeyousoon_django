@@ -16,6 +16,6 @@ urlpatterns = patterns('',
     # url(r'^admin/', include(admin.site.urls)),
     
     # API URL
-    url(r'^webapi/', include('webapi.urls'), name='webapi')
-    
+    url(r'^webapi/', include('webapi.urls'), name='webapi'),
+    url(r'^docs$', include('rest_framework_docs.urls'), name='docs'),
 )

@@ -82,7 +82,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'webapi',
-    'seeyousoonAPI',
+#     'seeyousoonAPI',
     'rest_framework',
     'rest_framework_docs'
 )

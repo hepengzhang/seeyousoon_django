@@ -90,9 +90,9 @@ def login(request):
             info = info[0]
         elif 'username' in paraDict:
             auth = models.user_auth.objects.select_related().filter(username=paraDict['username'])
-            if len(auth) != 1: return JSONResponse4xx(u"Username "+paraDict['username']+" does not exist.", 404)
+            if len(auth) != 1: return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_AUTH_REGISTER_USERNAMENOTEXIST, 404)
             auth = auth[0] 
-            if auth.password != paraDict['password']: return JSONResponse4xx("Wrong password", 401)
+            if auth.password != paraDict['password']: return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_AUTH_REGISTER_WRONGPASSWORD, 401)
             info = auth.user
         
         ##update access_token
@@ -120,7 +120,7 @@ def register(request):
         paraDict = json.loads(request.body)
         exist = models.user_auth.objects.filter(username=paraDict['username']).exists()
         if exist:
-            return JSONResponse4xx("Username exists.", 400)
+            return JSONResponse4xx(SYSMessages.SYSMESSAGE_ERROR_AUTH_REGISTER_USERNAMEUNAVAILABLE, 400)
         
         ### user_info
         info = models.user_info(email=paraDict['email'],
