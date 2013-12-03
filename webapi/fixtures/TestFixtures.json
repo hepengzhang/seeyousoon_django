@@ -1,0 +1,331 @@
+[
+  {
+    "pk": 1,
+    "model": "webapi.user_info",
+    "fields": {
+      "username": "hepengzhang",
+      "primary_sns": 0,
+      "wb_id": 1923812832,
+      "name": "Hepeng Zhang",
+      "user_created_date": "2013-08-09T03:13:40",
+      "phone": "918381922",
+      "gender": 0,
+      "fb_id": 381723731,
+      "longitude": "0E-8",
+      "user_access": 0,
+      "last_login": "2013-11-26T05:27:52",
+      "latitude": "0E-8",
+      "email": "hepengzhang@test.com"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "webapi.user_info",
+    "fields": {
+      "username": "yimingkang",
+      "primary_sns": 0,
+      "wb_id": 1923812832,
+      "name": "Yiming Kang",
+      "user_created_date": "2013-08-09T03:14:03",
+      "phone": "918381922",
+      "gender": 0,
+      "fb_id": 381723731,
+      "longitude": "13.21341200",
+      "user_access": 0,
+      "last_login": "2013-11-27T04:26:59",
+      "latitude": "41.32914900",
+      "email": "yimingkang@test.com"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "webapi.user_info",
+    "fields": {
+      "username": "dingniwu",
+      "primary_sns": 0,
+      "wb_id": 1923812832,
+      "name": "Dingni Wu",
+      "user_created_date": "2013-08-09T03:14:45",
+      "phone": "918381922",
+      "gender": 0,
+      "fb_id": 381723731,
+      "longitude": "0E-8",
+      "user_access": 0,
+      "last_login": "2013-08-09T03:14:45",
+      "latitude": "0E-8",
+      "email": "dingniwu@test.com"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "webapi.user_info",
+    "fields": {
+      "username": "xintongwang",
+      "primary_sns": 0,
+      "wb_id": 1923812832,
+      "name": "Xintong Wang",
+      "user_created_date": "2013-08-09T03:15:08",
+      "phone": "918381922",
+      "gender": 0,
+      "fb_id": 381723731,
+      "longitude": "0E-8",
+      "user_access": 0,
+      "last_login": "2013-08-09T03:15:08",
+      "latitude": "0E-8",
+      "email": "xintongwang@test.com"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "webapi.user_info",
+    "fields": {
+      "username": "liqu",
+      "primary_sns": 0,
+      "wb_id": 0,
+      "name": "",
+      "user_created_date": "2013-08-15T02:38:39",
+      "phone": "",
+      "gender": 0,
+      "fb_id": 0,
+      "longitude": "0E-8",
+      "user_access": 0,
+      "last_login": "2013-08-15T02:38:39",
+      "latitude": "0E-8",
+      "email": "liqu@test.com"
+    }
+  },
+  {
+    "pk": 6,
+    "model": "webapi.user_info",
+    "fields": {
+      "username": "wanwenhan",
+      "primary_sns": 0,
+      "wb_id": 0,
+      "name": "",
+      "user_created_date": "2013-09-06T03:33:24",
+      "phone": "",
+      "gender": 0,
+      "fb_id": 0,
+      "longitude": "-74.04666100",
+      "user_access": 0,
+      "last_login": "2013-09-22T18:56:35",
+      "latitude": "40.72927500",
+      "email": "wanwenhan@test.com"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "webapi.user_auth",
+    "fields": {
+      "username": "hepengzhang",
+      "access_token": "hepengzhangAT",
+      "password": "hepengzhangPW"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "webapi.user_auth",
+    "fields": {
+      "username": "yimingkang",
+      "access_token": "yimingkangAT",
+      "password": "yimingkangPW"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "webapi.user_auth",
+    "fields": {
+      "username": "dingniwu",
+      "access_token": "dingniwuAT",
+      "password": "dingniwuPW"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "webapi.user_auth",
+    "fields": {
+      "username": "xintongwang",
+      "access_token": "xintongwangAT",
+      "password": "xintongwangPW"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "webapi.user_auth",
+    "fields": {
+      "username": "liqu",
+      "access_token": "liquAT",
+      "password": "liquPW"
+    }
+  },
+  {
+    "pk": 6,
+    "model": "webapi.user_auth",
+    "fields": {
+      "username": "wanwenhan",
+      "access_token": "wanwenhanAT",
+      "password": "wanwenhanPW"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "webapi.user_search",
+    "fields": {
+      "username": "hepengzhang",
+      "name": "Hepeng Zhang"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "webapi.user_search",
+    "fields": {
+      "username": "yimingkang",
+      "name": "Yiming Kang"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "webapi.user_search",
+    "fields": {
+      "username": "dingniwu",
+      "name": "Dingni Wu"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "webapi.user_search",
+    "fields": {
+      "username": "xintongwang",
+      "name": "Xintong Wang"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "webapi.user_search",
+    "fields": {
+      "username": "liqu",
+      "name": "Li Qu"
+    }
+  },
+  {
+    "pk": 6,
+    "model": "webapi.user_search",
+    "fields": {
+      "username": "wanwenhan",
+      "name": "Wanwen Han"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "webapi.friends",
+    "fields": {
+      "status": 1,
+      "updated_at": "2013-09-07T03:03:40",
+      "user": 1,
+      "friend": 3,
+      "together_time": 0
+    }
+  },
+  {
+    "pk": 2,
+    "model": "webapi.friends",
+    "fields": {
+      "status": 1,
+      "updated_at": "2013-09-07T03:03:40",
+      "user": 3,
+      "friend": 1,
+      "together_time": 0
+    }
+  },
+  {
+    "pk": 3,
+    "model": "webapi.friends",
+    "fields": {
+      "status": 0,
+      "updated_at": "2013-09-07T03:03:40",
+      "user": 1,
+      "friend": 4,
+      "together_time": 0
+    }
+  },
+  {
+    "pk": 1,
+    "model": "webapi.activities",
+    "fields": {
+      "status": 0,
+      "end_date": "2013-09-08T20:40:00",
+      "description": "",
+      "keyword": "TestActivity1",
+      "creator": 1,
+      "num_of_participants": 0,
+      "destination": "9th & Coles Tavern",
+      "longitude": "-74.04650100",
+      "access": 0,
+      "activity_created_date": "2013-09-08T19:53:25",
+      "latitude": "40.72863800",
+      "num_of_comments": 0,
+      "type": 0,
+      "start_date": "2013-09-08T19:47:00"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "webapi.activities",
+    "fields": {
+      "status": 0,
+      "end_date": null,
+      "description": "",
+      "keyword": "TestActivity2",
+      "creator": 3,
+      "num_of_participants": 0,
+      "destination": "9/11 Memorial Museum",
+      "longitude": "-74.01088700",
+      "access": 0,
+      "activity_created_date": "2013-09-22T18:55:14",
+      "latitude": "40.70959100",
+      "num_of_comments": 0,
+      "type": 0,
+      "start_date": "2013-09-22T19:20:00"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "webapi.activities",
+    "fields": {
+      "status": 0,
+      "end_date": null,
+      "description": "",
+      "keyword": "TestActivity3",
+      "creator": 2,
+      "num_of_participants": 0,
+      "destination": "9/11 Memorial Museum",
+      "longitude": "-74.01088700",
+      "access": 0,
+      "activity_created_date": "2013-09-22T18:56:48",
+      "latitude": "40.70959100",
+      "num_of_comments": 0,
+      "type": 0,
+      "start_date": "2013-09-22T19:50:00"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "webapi.comments",
+    "fields": {
+      "created_date": "2013-12-02T04:41:15",
+      "activity": 2,
+      "contents": "testComment1",
+      "creator": 1
+    }
+  },
+  {
+    "pk": 2,
+    "model": "webapi.comments",
+    "fields": {
+      "created_date": "2013-12-02T04:41:24",
+      "activity": 2,
+      "contents": "testComment2",
+      "creator": 2
+    }
+  }
+]
