@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.test.client import Client
 import simplejson as json
-from webapi import models,SYSMessages
+from webapi import models
 
 from rest_framework import status
 
