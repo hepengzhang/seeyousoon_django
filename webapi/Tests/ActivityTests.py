@@ -9,6 +9,7 @@ API_COMMENT_URL = "/webapi/activity/comment"
 class activityTest(TestCase):
     
     fixtures = ['TestFixtures.json']
+    authentication = "1 hepengzhangAT"
     
     def setUp(self):
         self.c = Client()
@@ -23,11 +24,11 @@ class activityTest(TestCase):
                    }
         numOfActs = models.activities.objects.all().count();
         self.assertEqual(numOfActs, 3)
-        response = self.c.post(API_ACTIVITY_URL,data=json.dumps(request),content_type='application/json')
+        response = self.c.post(API_ACTIVITY_URL, data=json.dumps(request), content_type='application/json', HTTP_AUTHORIZATION=self.authentication)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
         self.assertTrue('activity' in response, "return doesn't contain activity")
-        self.assertEqual(response['activity']['activity_id'],4)
+        self.assertEqual(response['activity']['activity_id'], 4)
         pass
     
     def test_getActivity(self):
@@ -38,15 +39,16 @@ class activityTest(TestCase):
                    "access_token":"hepengzhangAT",
                    "type":"friends"
                    }
-        response = self.c.get(API_ACTIVITY_URL,data=request)
+        response = self.c.get(API_ACTIVITY_URL, data=request, HTTP_AUTHORIZATION=self.authentication)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
         self.assertTrue(isinstance(response["activities"], list))
-        self.assertEqual(len(response["activities"]),2)
+        self.assertEqual(len(response["activities"]), 2)
     
 class CommentsTest(TestCase):
     
     fixtures = ['TestFixtures.json']
+    authentication = u"1 hepengzhangAT"
     
     def setUp(self):
         self.user = {"user_id":1, "access_token":"hepengzhangAT"}
@@ -57,20 +59,20 @@ class CommentsTest(TestCase):
         request = dict(self.request)
         comment = {"activity_id":1, "contents":"user1's comments"}
         request.update(comment)
-        response = self.c.post(API_COMMENT_URL, data=json.dumps(request), content_type='application/json')
+        response = self.c.post(API_COMMENT_URL, data=json.dumps(request), content_type='application/json', HTTP_AUTHORIZATION=self.authentication)
 
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
         comment = models.comments.objects.filter(activity_id=request['activity_id'])
-        self.assertEqual(comment.count(),1)
-        self.assertEqual(comment[0].creator_id,request["user_id"])
+        self.assertEqual(comment.count(), 1)
+        self.assertEqual(comment[0].creator_id, request["user_id"])
         self.assertEqual(comment[0].contents, request["contents"])
-        self.assertEqual(comment[0].activity_id,request["activity_id"])
+        self.assertEqual(comment[0].activity_id, request["activity_id"])
         activity = models.activities.objects.get(pk=1)
         self.assertEqual(activity.num_of_comments, 1)
 
         request.update({"user_id":2})
-        self.c.post(API_COMMENT_URL, data=json.dumps(request), content_type='application/json')
+        self.c.post(API_COMMENT_URL, data=json.dumps(request), content_type='application/json', HTTP_AUTHORIZATION=self.authentication)
         activity = models.activities.objects.get(pk=1)
         self.assertEqual(activity.num_of_comments, 2)
     
@@ -79,7 +81,7 @@ class CommentsTest(TestCase):
         self.assertEqual(numOfComments, 2)
         request = dict(self.user)
         request.update({"activity_id":2, "offset":0, "number":50})
-        response = self.c.get(API_COMMENT_URL, data=request)
+        response = self.c.get(API_COMMENT_URL, data=request, HTTP_AUTHORIZATION=self.authentication)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
         self.assertEqual(len(response['comments']), 2)
@@ -87,7 +89,7 @@ class CommentsTest(TestCase):
     def test_deleteComments(self):
         request = dict(self.user)
         request.update({"activity_id":2, "comment_id":1})
-        response = self.c.delete(API_COMMENT_URL, data=json.dumps(request), content_type='application/json')
+        response = self.c.delete(API_COMMENT_URL, data=json.dumps(request), content_type='application/json', HTTP_AUTHORIZATION=self.authentication)
 
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)

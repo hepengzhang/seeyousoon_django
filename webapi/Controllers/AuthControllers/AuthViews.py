@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import permissions
 
 from webapi import models, SYSMessages
 from webapi.Utils import Serializers
@@ -16,6 +17,8 @@ class LoginView(APIView):
     """
     Login current user
     """
+    permission_classes = (permissions.AllowAny,)
+    
     def post(self, request):
         paraDict = request.DATA
  
@@ -58,6 +61,7 @@ class SignupView(APIView):
     """
     Sign up a new account
     """
+    permission_classes = (permissions.AllowAny,)
     def post(self, request):
         paraDict = request.DATA
         exist = models.user_auth.objects.filter(username=paraDict['username']).exists()
@@ -108,6 +112,7 @@ class CheckUsernameView(APIView):
     """
     check if username is available
     """
+    permission_classes = (permissions.AllowAny,)
     def get(self, request):
         paraDict = request.QUERY_PARAMS
         user = models.user_auth.objects.filter(username=paraDict['username'])

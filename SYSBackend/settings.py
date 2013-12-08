@@ -87,6 +87,15 @@ INSTALLED_APPS = (
     'rest_framework_docs'
 )
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'webapi.Utils.Authentication.SYSAPIAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'webapi.Utils.Permissions.AuthPermission',
+    )
+}
+
 #Apple push notification provider
 PYAPNS_CONFIG = {
   'HOST': 'http://localhost:8077/',
