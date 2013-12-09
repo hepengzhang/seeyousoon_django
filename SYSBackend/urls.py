@@ -17,5 +17,4 @@ urlpatterns = patterns('',
     
     # API URL
     url(r'^webapi/', include('webapi.urls'), name='webapi'),
-    url(r'^docs$', include('rest_framework_docs.urls'), name='docs'),
 )

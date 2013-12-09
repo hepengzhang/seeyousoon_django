@@ -84,7 +84,7 @@ INSTALLED_APPS = (
     'webapi',
 #     'seeyousoonAPI',
     'rest_framework',
-    'rest_framework_docs'
+    'rest_framework_swagger',
 )
 
 REST_FRAMEWORK = {
