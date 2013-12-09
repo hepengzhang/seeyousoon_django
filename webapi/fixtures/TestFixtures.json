@@ -243,8 +243,8 @@
     "fields": {
       "status": 0,
       "updated_at": "2013-09-07T03:03:40",
-      "user": 1,
-      "friend": 4,
+      "user": 4,
+      "friend": 1,
       "together_time": 0
     }
   },

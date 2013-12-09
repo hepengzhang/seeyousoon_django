@@ -82,6 +82,12 @@ class ActivitySerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = models.activities
 
+class FriendsSerializer(DynamicFieldsModelSerializer):
+    friend = UserSerializer()
+    class Meta:
+        model = models.friends
+        fields = ("friend", "status", "together_time", "updated_at")
+
 class CommentSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = models.comments

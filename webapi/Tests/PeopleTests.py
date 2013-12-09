@@ -7,7 +7,7 @@ def get_people_url(user_id):
     return "/webapi/people/"+user_id
 
 def get_friends_url(user_id, scope):
-    return "webapi/people/"+user_id+"/friends/"+scope
+    return "/webapi/people/"+user_id+"/friends/"+scope
 
 class peopleTest(TestCase):
     
@@ -39,5 +39,40 @@ class peopleTest(TestCase):
         url = get_people_url("2")
         response = self.c.get(url, HTTP_AUTHORIZATION=self.authentication)
         self.assertEqual(response.status_code, 403)
+        
+class friendsTest(TestCase):
+    
+    fixtures = ['TestFixtures.json']
+    authentication = "1 hepengzhangAT"
+    
+    def setUp(self):
+        self.c = Client()
+        pass
+    
+    def test_getMyFriends(self):
+        url = get_friends_url("1", "friends")
+        response = self.c.get(url, HTTP_AUTHORIZATION=self.authentication)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.content)
+        self.assertTrue(len(response)==1,"There should be only one friend")
+        pass
 
+    def test_getMyRequest(self):
+        url = get_friends_url("1", "requests")
+        response = self.c.get(url, HTTP_AUTHORIZATION=self.authentication)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.content)
+        self.assertTrue(len(response)==1,"There should be only one request")
+        
+    def test_getAll(self):
+        url = get_friends_url("1", "all")
+        response = self.c.get(url, HTTP_AUTHORIZATION=self.authentication)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.content)
+        self.assertTrue(len(response)==2,"There should be two objects in response")
+            
+    def test_getOthersFriends(self):
+        url = get_friends_url("2", "all")
+        response = self.c.get(url, HTTP_AUTHORIZATION=self.authentication)
+        self.assertEqual(response.status_code, 403)
     
