@@ -9,6 +9,9 @@ def get_people_url(user_id):
 def get_friends_url(user_id, scope):
     return "/webapi/people/"+user_id+"/friends/"+scope
 
+def get_activities_url(user_id):
+    return "/webapi/people/"+user_id+"/activities"
+
 class peopleTest(TestCase):
     
     fixtures = ['TestFixtures.json']
@@ -75,4 +78,32 @@ class friendsTest(TestCase):
         url = get_friends_url("2", "all")
         response = self.c.get(url, HTTP_AUTHORIZATION=self.authentication)
         self.assertEqual(response.status_code, 403)
+        
+class peopleActivitiesTest(TestCase):
+    
+    fixtures = ['TestFixtures.json']
+    authentication = "1 hepengzhangAT"
+    
+    def expect(self, user_id, numOfActivities):
+        url = get_activities_url(user_id)
+        response = self.c.get(url, HTTP_AUTHORIZATION=self.authentication)
+        self.assertEqual(response.status_code, 200)
+        response = json.loads(response.content)
+        self.assertTrue(len(response)==numOfActivities,"There should be "+str(numOfActivities)+" object")
+
+    def setUp(self):
+        self.c = Client()
+    
+    def test_getMyActivities(self):
+        self.expect("1", 1)
+    
+    def test_getMyFriendActivities(self):
+        self.expect("3", 1)
+        
+    def test_getOthersActivities(self):
+        url = get_activities_url("2")
+        response = self.c.get(url, HTTP_AUTHORIZATION=self.authentication)
+        self.assertEqual(response.status_code, 403)
+
+    
     

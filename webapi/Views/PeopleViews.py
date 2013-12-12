@@ -7,19 +7,28 @@ from webapi.Utils import Serializers, Permissions
 
 from django.db.models import Q
 
+class mustBeFriendView(generics.GenericAPIView):
+    
+    def check_permissions(self, request):
+        generics.GenericAPIView.check_permissions(self, request)
+        requested_user_id = long(self.kwargs["user_id"])
+        current_user_id = self.request.user.user_id
+        isFriend = models.friends.objects.filter(user=requested_user_id, friend=current_user_id, status__gt=0).count()
+        if requested_user_id != current_user_id and isFriend == 0:
+            self.permission_denied(self.request)
+
 class UserView(mixins.RetrieveModelMixin,
-               generics.GenericAPIView):
+               mustBeFriendView):
 
     queryset = models.user_info.objects.all()
     serializer_class = Serializers.UserSerializer
     lookup_field = 'user_id'
-    permission_classes = (Permissions.PeoplePermission, )
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
 class FriendsView(mixins.ListModelMixin,
-                 generics.GenericAPIView):
+                 mustBeFriendView):
 
     queryset = models.friends.objects.all()
     serializer_class = Serializers.FriendsSerializer
@@ -40,12 +49,16 @@ class FriendsView(mixins.ListModelMixin,
             request = Q(friend_id=user_id, status=0)
             friends = Q(user_id=user_id, status__gt=0)
             return models.friends.objects.filter(request | friends)
-            
-class AuthView(APIView):
-    def get(self, request):
-        content = {"status":"request was permitted"}
-        return Response(content)
+
+class ActivitiesView(mustBeFriendView,
+                     mixins.ListModelMixin):
     
-    def post(self, request):
-        content = {"status":"request was permitted"}
-        return Response(content)
+    serializer_class = Serializers.ActivitySerializer
+    lookup_field = 'activity_id'
+    
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        user_id = self.kwargs["user_id"]
+        return models.activities.objects.filter(creator=user_id)
