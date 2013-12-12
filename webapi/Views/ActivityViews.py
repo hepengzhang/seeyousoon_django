@@ -12,9 +12,10 @@ class ActivitiesBaseView(generics.GenericAPIView):
     def check_permissions(self, request):
         generics.GenericAPIView.check_permissions(self, request)
         current_user_id = request.user.user_id
-        activity = self.get_object()
+        activity_queryset = models.activities.objects.all()
+        filter_kwargs = {"activity_id": self.kwargs["activity_id"]}
+        activity = generics.get_object_or_404(activity_queryset, **filter_kwargs)
         creator_id = activity.creator_id
-        
         isFriend = models.friends.objects.filter(user_id=creator_id, friend_id=current_user_id, status__gt=0).count()
         isPublic = activity.access
         if isPublic > 0 and isFriend < 1: self.permission_denied(request)
@@ -29,6 +30,18 @@ class ActivitiesView(ActivitiesBaseView,
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
+class ActivityCommentsView(ActivitiesBaseView,
+                          mixins.ListModelMixin):
+    
+    serializer_class = Serializers.CommentSerializer
+    
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        activity_id = self.kwargs["activity_id"]
+        commentsQuerySet = models.comments.objects.filter(activity_id=activity_id)
+        return commentsQuerySet
 
 class SearchAcitivityView(APIView):
     def get(self, request):

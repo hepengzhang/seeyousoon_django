@@ -367,5 +367,15 @@
       "contents": "testComment2",
       "creator": 2
     }
+  },
+  {
+    "pk": 3,
+    "model": "webapi.comments",
+    "fields": {
+      "created_date": "2013-12-02T04:41:15",
+      "activity": 4,
+      "contents": "testComment3",
+      "creator": 4
+    }
   }
 ]

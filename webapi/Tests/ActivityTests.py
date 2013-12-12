@@ -9,6 +9,9 @@ API_COMMENT_URL = "/webapi/activity/comment"
 def get_activities_ID_url(activity_id):
     return "/webapi/activities/"+activity_id
 
+def get_activityComment_url(activity_id):
+    return "/webapi/activities/"+activity_id+"/comments"
+
 class ActivitiesTest(TestCase):
     fixtures = ['TestFixtures.json']
     authorization = "1 hepengzhangAT"
@@ -83,12 +86,23 @@ class activityTest(TestCase):
 class CommentsTest(TestCase):
     
     fixtures = ['TestFixtures.json']
-    authentication = u"1 hepengzhangAT"
+    authorization = u"1 hepengzhangAT"
+    c = Client()
     
-    def setUp(self):
-        self.user = {"user_id":1, "access_token":"hepengzhangAT"}
-        self.request = dict(self.user)
-        self.c = Client()
+    def expectGetComment(self, activity_id, return_code, numOfComment):
+        url = get_activityComment_url(activity_id)
+        response = self.c.get(url, HTTP_AUTHORIZATION=self.authorization)
+        print response
+        self.assertEqual(response.status_code, return_code)
+        if response.status_code != 200: return
+        response = json.loads(response.content)
+        self.assertEqual(len(response), numOfComment)
+    
+    def test_getAccessibleComments(self):
+        self.expectGetComment("2", 200, 2)
+    
+    def test_getNoAccessComments(self):
+        self.expectGetComment("4", 403, 0)
         
     def test_createComment(self):
         request = dict(self.request)
