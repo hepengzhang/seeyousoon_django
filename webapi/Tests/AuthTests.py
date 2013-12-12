@@ -7,7 +7,7 @@ from rest_framework import status
 
 API_LOGIN_URL = "/webapi/auth/login"
 API_REGISTER_URL = "/webapi/auth/register"
-API_CHECKUSERNAME_URL = "/webapi/auth/checkUsername"
+API_CHECKUSERNAME_URL = "/webapi/auth/checkusername"
 
 class registerTest(TestCase):
 
