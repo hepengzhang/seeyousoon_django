@@ -296,7 +296,47 @@
       "end_date": null,
       "description": "",
       "keyword": "TestActivity3",
-      "creator": 2,
+      "creator": 3,
+      "num_of_participants": 0,
+      "destination": "9/11 Memorial Museum",
+      "longitude": "-74.01088700",
+      "access": 1,
+      "activity_created_date": "2013-09-22T18:56:48",
+      "latitude": "40.70959100",
+      "num_of_comments": 0,
+      "type": 0,
+      "start_date": "2013-09-22T19:50:00"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "webapi.activities",
+    "fields": {
+      "status": 0,
+      "end_date": null,
+      "description": "",
+      "keyword": "TestActivity3",
+      "creator": 4,
+      "num_of_participants": 0,
+      "destination": "9/11 Memorial Museum",
+      "longitude": "-74.01088700",
+      "access": 1,
+      "activity_created_date": "2013-09-22T18:56:48",
+      "latitude": "40.70959100",
+      "num_of_comments": 0,
+      "type": 0,
+      "start_date": "2013-09-22T19:50:00"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "webapi.activities",
+    "fields": {
+      "status": 0,
+      "end_date": null,
+      "description": "",
+      "keyword": "TestActivity3",
+      "creator": 4,
       "num_of_participants": 0,
       "destination": "9/11 Memorial Museum",
       "longitude": "-74.01088700",

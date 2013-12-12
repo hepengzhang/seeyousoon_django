@@ -6,6 +6,41 @@ from webapi import models
 API_ACTIVITY_URL = "/webapi/activity"
 API_COMMENT_URL = "/webapi/activity/comment"
 
+def get_activities_ID_url(activity_id):
+    return "/webapi/activities/"+activity_id
+
+class ActivitiesTest(TestCase):
+    fixtures = ['TestFixtures.json']
+    authorization = "1 hepengzhangAT"
+    c = Client()
+    
+    def expect(self, activity_id, return_code):
+        response = self.c.get(get_activities_ID_url(activity_id), HTTP_AUTHORIZATION=self.authorization)
+        self.assertEqual(response.status_code, return_code)
+        if return_code!=200:return
+        response = json.loads(response.content)
+        self.assertEqual(str(response['activity_id']), activity_id)
+        
+    def test_getMyAcitivity(self):
+        self.expect("1", 200)
+    
+    def test_getFriendPublicActivity(self):
+        self.expect("2", 200)
+
+    def test_getFriendPrivateActivity(self):
+        self.expect("3", 200)
+            
+    def test_getOtherPrivateActivity(self):
+        self.expect("4", 403)
+    
+    def test_getOtherPublicActivity(self):
+        self.expect("5", 200)
+        
+    def test_getNonExistActivity(self):
+        self.expect("6", 404)
+        
+    
+
 class activityTest(TestCase):
     
     fixtures = ['TestFixtures.json']

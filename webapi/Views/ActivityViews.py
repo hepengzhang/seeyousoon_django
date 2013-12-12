@@ -1,3 +1,4 @@
+from rest_framework import mixins, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,7 +8,29 @@ from webapi.Utils import Serializers, PushNotification
 
 from datetime import datetime
 
-class AcitivityView(APIView):
+class ActivitiesBaseView(generics.GenericAPIView):
+    def check_permissions(self, request):
+        generics.GenericAPIView.check_permissions(self, request)
+        current_user_id = request.user.user_id
+        activity = self.get_object()
+        creator_id = activity.creator_id
+        
+        isFriend = models.friends.objects.filter(user_id=creator_id, friend_id=current_user_id, status__gt=0).count()
+        isPublic = activity.access
+        if isPublic > 0 and isFriend < 1: self.permission_denied(request)
+
+class ActivitiesView(ActivitiesBaseView,
+                     mixins.RetrieveModelMixin):
+    
+    queryset = models.activities.objects.all()
+    serializer_class = Serializers.ActivitySerializer
+    lookup_field = 'activity_id'
+    
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+    
+
+class SearchAcitivityView(APIView):
     def get(self, request):
         if request.QUERY_PARAMS['type']=='nearby':#return all nearby public activities
             return Response(SYSMessages.SYSMESSAGE_ERROR_NOTIMPLEMENTED, status.HTTP_501_NOT_IMPLEMENTED)
