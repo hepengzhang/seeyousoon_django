@@ -91,3 +91,8 @@ class FriendsSerializer(DynamicFieldsModelSerializer):
 class CommentSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = models.comments
+        
+class ParticipantSerializer(DynamicFieldsModelSerializer):
+    participant = UserSerializer()
+    class Meta:
+        model = models.participants

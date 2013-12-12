@@ -19,5 +19,6 @@ urlpatterns = patterns('',
     
     url(r'^activities/(?P<activity_id>\d+)$', ActivityViews.ActivitiesView.as_view()),
     url(r'^activities/(?P<activity_id>\d+)/comments$', ActivityViews.ActivityCommentsView.as_view()),
+    url(r'^activities/(?P<activity_id>\d+)/participants$', ActivityViews.ParticipantsView.as_view()),
     
 )

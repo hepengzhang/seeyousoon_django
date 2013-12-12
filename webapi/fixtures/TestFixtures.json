@@ -377,5 +377,44 @@
       "contents": "testComment3",
       "creator": 4
     }
+  },
+  {
+    "pk": 1,
+    "model": "webapi.participants",
+    "fields": {
+      "status": 0,
+      "distance": 0,
+      "participant": 1,
+      "updated_at": "2013-12-12T22:51:58",
+      "longitude": "0E-8",
+      "activity": 1,
+      "latitude": "0E-8"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "webapi.participants",
+    "fields": {
+      "status": 0,
+      "distance": 0,
+      "participant": 3,
+      "updated_at": "2013-12-12T22:51:58",
+      "longitude": "0E-8",
+      "activity": 1,
+      "latitude": "0E-8"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "webapi.participants",
+    "fields": {
+      "status": 0,
+      "distance": 0,
+      "participant": 4,
+      "updated_at": "2013-12-12T22:51:58",
+      "longitude": "0E-8",
+      "activity": 4,
+      "latitude": "0E-8"
+    }
   }
 ]

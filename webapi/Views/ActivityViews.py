@@ -42,6 +42,20 @@ class ActivityCommentsView(ActivitiesBaseView,
         activity_id = self.kwargs["activity_id"]
         commentsQuerySet = models.comments.objects.filter(activity_id=activity_id)
         return commentsQuerySet
+    
+class ParticipantsView(ActivitiesBaseView,
+                         mixins.ListModelMixin):
+    
+    serializer_class = Serializers.ParticipantSerializer
+    
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        activity_id = self.kwargs['activity_id']
+        peopleQuerySet = models.participants.objects.filter(activity_id=activity_id)
+        return peopleQuerySet
+
 
 class SearchAcitivityView(APIView):
     def get(self, request):

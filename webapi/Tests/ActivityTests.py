@@ -12,6 +12,9 @@ def get_activities_ID_url(activity_id):
 def get_activityComment_url(activity_id):
     return "/webapi/activities/"+activity_id+"/comments"
 
+def get_activityParticipant_url(activity_id):
+    return "/webapi/activities/"+activity_id+"/participants"
+
 class ActivitiesTest(TestCase):
     fixtures = ['TestFixtures.json']
     authorization = "1 hepengzhangAT"
@@ -92,7 +95,6 @@ class CommentsTest(TestCase):
     def expectGetComment(self, activity_id, return_code, numOfComment):
         url = get_activityComment_url(activity_id)
         response = self.c.get(url, HTTP_AUTHORIZATION=self.authorization)
-        print response
         self.assertEqual(response.status_code, return_code)
         if response.status_code != 200: return
         response = json.loads(response.content)
@@ -145,3 +147,23 @@ class CommentsTest(TestCase):
         comments = models.comments.objects.filter(activity_id=2)
         self.assertEqual(comments.count(), 1)
         self.assertEqual(comments[0].creator_id, 2)
+
+class ParticipantsTest(TestCase):
+    fixtures = ['TestFixtures.json']
+    authorization = u"1 hepengzhangAT"
+    c = Client()
+    
+    def expect(self, activity_id, return_code, expectedNumParticipants):
+        url = get_activityParticipant_url(activity_id)
+        response = self.c.get(url, HTTP_AUTHORIZATION=self.authorization)
+        self.assertEqual(response.status_code, return_code)
+        if response.status_code != 200: return
+        response = json.loads(response.content)
+        self.assertEqual(len(response), expectedNumParticipants)
+
+    def test_getAccessibleParticipants(self):
+        self.expect("1", 200, 2)
+    
+    def test_getUnaccessibleParticipants(self):
+        self.expect("4", 403, 0)
+    
