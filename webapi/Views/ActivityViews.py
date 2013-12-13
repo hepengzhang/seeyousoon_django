@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from webapi import models, SYSMessages
+from webapi.SYSMessages import Http200Response
 from webapi.Utils import Serializers, PushNotification
 
 from datetime import datetime
@@ -31,12 +32,21 @@ class ActivitiesView(ActivitiesBaseView,
         return self.retrieve(request, *args, **kwargs)
     
 class ActivityCommentsView(ActivitiesBaseView,
-                          mixins.ListModelMixin):
+                          mixins.ListModelMixin,
+                          mixins.CreateModelMixin):
     
     serializer_class = Serializers.CommentSerializer
     
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
+
+    """
+    Required parameters:
+    contents, unicode
+    """    
+    def post(self, request, *args, **kwargs):
+        request.DATA.update({"activity":self.kwargs['activity_id'], "creator":request.user.user_id})
+        return self.create(request, *args, **kwargs)
     
     def get_queryset(self):
         activity_id = self.kwargs["activity_id"]

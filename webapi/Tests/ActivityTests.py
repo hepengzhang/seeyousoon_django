@@ -99,6 +99,21 @@ class CommentsTest(TestCase):
         if response.status_code != 200: return
         response = json.loads(response.content)
         self.assertEqual(len(response), numOfComment)
+        
+    def expectCreatedComment(self, activity_id, return_code, content):
+        commentsCountBefore = models.comments.objects.filter(activity_id=activity_id).count()
+        
+        comment = {"contents":content}
+        url = get_activityComment_url(activity_id)
+        response = self.c.post(url, data=json.dumps(comment), content_type='application/json', HTTP_AUTHORIZATION=self.authorization)
+        self.assertEqual(response.status_code, return_code)
+        if response.status_code != 201: return 
+        commentsCountNow = models.comments.objects.filter(activity_id=activity_id).count()
+        self.assertEqual(commentsCountNow, commentsCountBefore+1, "Not added in database")
+        response = json.loads(response.content)
+        self.assertEqual(response["contents"], content)
+        self.assertEqual(str(response["activity"]), activity_id)
+        self.assertEqual(response["creator"], 1)
     
     def test_getAccessibleComments(self):
         self.expectGetComment("2", 200, 2)
@@ -106,36 +121,11 @@ class CommentsTest(TestCase):
     def test_getNoAccessComments(self):
         self.expectGetComment("4", 403, 0)
         
-    def test_createComment(self):
-        request = dict(self.request)
-        comment = {"activity_id":1, "contents":"user1's comments"}
-        request.update(comment)
-        response = self.c.post(API_COMMENT_URL, data=json.dumps(request), content_type='application/json', HTTP_AUTHORIZATION=self.authentication)
-
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.content)
-        comment = models.comments.objects.filter(activity_id=request['activity_id'])
-        self.assertEqual(comment.count(), 1)
-        self.assertEqual(comment[0].creator_id, request["user_id"])
-        self.assertEqual(comment[0].contents, request["contents"])
-        self.assertEqual(comment[0].activity_id, request["activity_id"])
-        activity = models.activities.objects.get(pk=1)
-        self.assertEqual(activity.num_of_comments, 1)
-
-        request.update({"user_id":2})
-        self.c.post(API_COMMENT_URL, data=json.dumps(request), content_type='application/json', HTTP_AUTHORIZATION=self.authentication)
-        activity = models.activities.objects.get(pk=1)
-        self.assertEqual(activity.num_of_comments, 2)
-    
-    def test_getComments(self):
-        numOfComments = models.comments.objects.filter(activity_id=2).count()
-        self.assertEqual(numOfComments, 2)
-        request = dict(self.user)
-        request.update({"activity_id":2, "offset":0, "number":50})
-        response = self.c.get(API_COMMENT_URL, data=request, HTTP_AUTHORIZATION=self.authentication)
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.content)
-        self.assertEqual(len(response['comments']), 2)
+    def test_createAccessibleComment(self):
+        self.expectCreatedComment("3", 201, "user1's comment")
+        
+    def test_createNonAccessibleComment(self):
+        self.expectCreatedComment("4", 403, "Can't be created")
         
     def test_deleteComments(self):
         request = dict(self.user)
