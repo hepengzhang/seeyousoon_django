@@ -36,6 +36,7 @@ class ActivityCommentsView(ActivitiesBaseView,
                           mixins.CreateModelMixin):
     
     serializer_class = Serializers.CommentSerializer
+    lookup_field = "comment_id"
     
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -47,6 +48,12 @@ class ActivityCommentsView(ActivitiesBaseView,
     def post(self, request, *args, **kwargs):
         request.DATA.update({"activity":self.kwargs['activity_id'], "creator":request.user.user_id})
         return self.create(request, *args, **kwargs)
+    
+    def delete(self, request, *args, **kwargs):
+        comment = self.get_object()
+        if comment.creator_id != request.user.user_id : self.permission_denied(request)
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
     def get_queryset(self):
         activity_id = self.kwargs["activity_id"]

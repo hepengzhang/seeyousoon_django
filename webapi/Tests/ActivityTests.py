@@ -114,6 +114,16 @@ class CommentsTest(TestCase):
         self.assertEqual(response["contents"], content)
         self.assertEqual(str(response["activity"]), activity_id)
         self.assertEqual(response["creator"], 1)
+        
+    def expectDeletedComment(self, comment_id, activity_id, return_code):
+        commentsCountBefore = models.comments.objects.filter(activity_id=activity_id).count()
+        
+        url = get_activityComment_url(activity_id) + "/" + comment_id
+        response = self.c.delete(url, HTTP_AUTHORIZATION=self.authorization)
+        self.assertEqual(response.status_code, return_code)
+        if return_code != 204: return;
+        commentsCountNow = models.comments.objects.filter(activity_id=activity_id).count()
+        self.assertEqual(commentsCountBefore, commentsCountNow+1)
     
     def test_getAccessibleComments(self):
         self.expectGetComment("2", 200, 2)
@@ -127,16 +137,15 @@ class CommentsTest(TestCase):
     def test_createNonAccessibleComment(self):
         self.expectCreatedComment("4", 403, "Can't be created")
         
-    def test_deleteComments(self):
-        request = dict(self.user)
-        request.update({"activity_id":2, "comment_id":1})
-        response = self.c.delete(API_COMMENT_URL, data=json.dumps(request), content_type='application/json', HTTP_AUTHORIZATION=self.authentication)
+    def test_deleteMyComments(self):
+        self.expectDeletedComment("1", "2", 204)
 
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.content)
-        comments = models.comments.objects.filter(activity_id=2)
-        self.assertEqual(comments.count(), 1)
-        self.assertEqual(comments[0].creator_id, 2)
+    def test_deleteOtherComments(self):
+        self.expectDeletedComment("2", "2", 403)
+    
+    def test_deleteNonExistingComment(self):
+        self.expectDeletedComment("3", "1", 404)
+        
 
 class ParticipantsTest(TestCase):
     fixtures = ['TestFixtures.json']
