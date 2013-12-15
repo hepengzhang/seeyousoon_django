@@ -27,6 +27,17 @@ class ActivitiesTest(TestCase):
         response = json.loads(response.content)
         self.assertEqual(str(response['activity_id']), activity_id)
         
+    def expectDeletedActivity(self, activity_id, return_code):
+        countBefore = models.activities.objects.filter(activity_id=activity_id).count()
+        self.assertEqual(countBefore, 1, "Initial data not correct")
+
+        url = get_activities_ID_url(activity_id)
+        response = self.c.delete(url, HTTP_AUTHORIZATION=self.authorization)
+        self.assertEqual(response.status_code, return_code)
+        
+        countNow = models.activities.objects.filter(activity_id=activity_id).count()
+        self.assertEqual(countNow, 0, "Activiy is not deleted in database")
+        
     def test_getMyAcitivity(self):
         self.expect("1", 200)
     
@@ -45,46 +56,50 @@ class ActivitiesTest(TestCase):
     def test_getNonExistActivity(self):
         self.expect("6", 404)
         
-    
-
-class activityTest(TestCase):
-    
-    fixtures = ['TestFixtures.json']
-    authentication = "1 hepengzhangAT"
-    
-    def setUp(self):
-        self.c = Client()
-        pass
-    
-    def test_createActivitySuccess(self):
-        request = {
-                   "user_id":"1",
-                   "access_token":"hepengzhangAT",
-                   "keyword":"TestCreateActivity",
-                   "access":0
-                   }
-        numOfActs = models.activities.objects.all().count();
-        self.assertEqual(numOfActs, 3)
-        response = self.c.post(API_ACTIVITY_URL, data=json.dumps(request), content_type='application/json', HTTP_AUTHORIZATION=self.authentication)
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.content)
-        self.assertTrue('activity' in response, "return doesn't contain activity")
-        self.assertEqual(response['activity']['activity_id'], 4)
-        pass
-    
-    def test_getActivity(self):
-        request = {
-                   "user_id":"1",
-                   "min_date":"2011-05-16T15:00:00",
-                   "max_date":"2014-05-16T15:00:00",
-                   "access_token":"hepengzhangAT",
-                   "type":"friends"
-                   }
-        response = self.c.get(API_ACTIVITY_URL, data=request, HTTP_AUTHORIZATION=self.authentication)
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.content)
-        self.assertTrue(isinstance(response["activities"], list))
-        self.assertEqual(len(response["activities"]), 2)
+    def test_deleteMyActivity(self):
+        self.expectDeletedActivity("1", 204)
+        
+    def test_deleteOthersActivity(self):
+        self.expectDeletedActivity("2", 403)
+        
+# class activityTest(TestCase):
+#     
+#     fixtures = ['TestFixtures.json']
+#     authentication = "1 hepengzhangAT"
+#     
+#     def setUp(self):
+#         self.c = Client()
+#         pass
+#     
+#     def test_createActivitySuccess(self):
+#         request = {
+#                    "user_id":"1",
+#                    "access_token":"hepengzhangAT",
+#                    "keyword":"TestCreateActivity",
+#                    "access":0
+#                    }
+#         numOfActs = models.activities.objects.all().count();
+#         self.assertEqual(numOfActs, 5)
+#         response = self.c.post(API_ACTIVITY_URL, data=json.dumps(request), content_type='application/json', HTTP_AUTHORIZATION=self.authentication)
+#         self.assertEqual(response.status_code, 200)
+#         response = json.loads(response.content)
+#         self.assertTrue('activity' in response, "return doesn't contain activity")
+#         self.assertEqual(response['activity']['activity_id'], 6)
+#         pass
+#     
+#     def test_getActivity(self):
+#         request = {
+#                    "user_id":"1",
+#                    "min_date":"2011-05-16T15:00:00",
+#                    "max_date":"2014-05-16T15:00:00",
+#                    "access_token":"hepengzhangAT",
+#                    "type":"friends"
+#                    }
+#         response = self.c.get(API_ACTIVITY_URL, data=request, HTTP_AUTHORIZATION=self.authentication)
+#         self.assertEqual(response.status_code, 200)
+#         response = json.loads(response.content)
+#         self.assertTrue(isinstance(response["activities"], list))
+#         self.assertEqual(len(response["activities"]), 2)
     
 class CommentsTest(TestCase):
     

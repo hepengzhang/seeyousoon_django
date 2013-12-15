@@ -89,7 +89,7 @@ class peopleActivitiesTest(TestCase):
         response = self.c.get(url, HTTP_AUTHORIZATION=self.authentication)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.content)
-        self.assertTrue(len(response)==numOfActivities,"There should be "+str(numOfActivities)+" object")
+        self.assertEqual(len(response), numOfActivities)
 
     def setUp(self):
         self.c = Client()
@@ -98,7 +98,7 @@ class peopleActivitiesTest(TestCase):
         self.expect("1", 1)
     
     def test_getMyFriendActivities(self):
-        self.expect("3", 1)
+        self.expect("3", 2)
         
     def test_getOthersActivities(self):
         url = get_activities_url("2")
