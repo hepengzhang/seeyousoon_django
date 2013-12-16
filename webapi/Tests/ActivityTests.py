@@ -21,6 +21,9 @@ class ActivitiesTest(TestCase):
     c = Client()
     
     def expect(self, activity_id, return_code):
+        response = self.c.get(get_activities_ID_url(activity_id))
+        self.assertEqual(response.status_code, 403)
+        
         response = self.c.get(get_activities_ID_url(activity_id), HTTP_AUTHORIZATION=self.authorization)
         self.assertEqual(response.status_code, return_code)
         if return_code!=200:return
@@ -32,9 +35,14 @@ class ActivitiesTest(TestCase):
         self.assertEqual(countBefore, 1, "Initial data not correct")
 
         url = get_activities_ID_url(activity_id)
+        
+        response = self.c.delete(url)
+        self.assertEqual(response.status_code, 403)
+        
         response = self.c.delete(url, HTTP_AUTHORIZATION=self.authorization)
         self.assertEqual(response.status_code, return_code)
         
+        if return_code != 204: return
         countNow = models.activities.objects.filter(activity_id=activity_id).count()
         self.assertEqual(countNow, 0, "Activiy is not deleted in database")
         
@@ -109,6 +117,9 @@ class CommentsTest(TestCase):
     
     def expectGetComment(self, activity_id, return_code, numOfComment):
         url = get_activityComment_url(activity_id)
+        response = self.c.get(url)
+        self.assertEqual(response.status_code, 403)
+        
         response = self.c.get(url, HTTP_AUTHORIZATION=self.authorization)
         self.assertEqual(response.status_code, return_code)
         if response.status_code != 200: return
@@ -120,6 +131,9 @@ class CommentsTest(TestCase):
         
         comment = {"contents":content}
         url = get_activityComment_url(activity_id)
+        response = self.c.post(url, data=json.dumps(comment), content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+        
         response = self.c.post(url, data=json.dumps(comment), content_type='application/json', HTTP_AUTHORIZATION=self.authorization)
         self.assertEqual(response.status_code, return_code)
         if response.status_code != 201: return 
@@ -134,6 +148,8 @@ class CommentsTest(TestCase):
         commentsCountBefore = models.comments.objects.filter(activity_id=activity_id).count()
         
         url = get_activityComment_url(activity_id) + "/" + comment_id
+        response = self.c.delete(url)
+        self.assertEqual(response.status_code, 403)
         response = self.c.delete(url, HTTP_AUTHORIZATION=self.authorization)
         self.assertEqual(response.status_code, return_code)
         if return_code != 204: return;
@@ -169,6 +185,8 @@ class ParticipantsTest(TestCase):
     
     def expect(self, activity_id, return_code, expectedNumParticipants):
         url = get_activityParticipant_url(activity_id)
+        response = self.c.get(url)
+        self.assertEqual(response.status_code, 403)
         response = self.c.get(url, HTTP_AUTHORIZATION=self.authorization)
         self.assertEqual(response.status_code, return_code)
         if response.status_code != 200: return

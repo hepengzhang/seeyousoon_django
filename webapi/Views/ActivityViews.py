@@ -4,26 +4,15 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from webapi import models, SYSMessages
-from webapi.SYSMessages import Http200Response
-from webapi.Utils import Serializers, PushNotification
+from webapi.Utils import Serializers, PushNotification, Permissions
 
 from datetime import datetime
 
-class ActivitiesBaseView(generics.GenericAPIView):
-    def check_permissions(self, request):
-        generics.GenericAPIView.check_permissions(self, request)
-        current_user_id = request.user.user_id
-        activity_queryset = models.activities.objects.all()
-        filter_kwargs = {"activity_id": self.kwargs["activity_id"]}
-        activity = generics.get_object_or_404(activity_queryset, **filter_kwargs)
-        creator_id = activity.creator_id
-        isFriend = models.friends.objects.filter(user_id=creator_id, friend_id=current_user_id, status__gt=0).count()
-        isPublic = activity.access
-        if isPublic > 0 and isFriend < 1: self.permission_denied(request)
-
-class ActivitiesView(ActivitiesBaseView,
-                     mixins.RetrieveModelMixin):
-    
+class ActivitiesView(generics.GenericAPIView,
+                     mixins.RetrieveModelMixin,
+                     mixins.DestroyModelMixin,
+                     mixins.UpdateModelMixin):
+    permission_classes = (Permissions.ActivityFriendReadOwnerModify, )
     queryset = models.activities.objects.all()
     serializer_class = Serializers.ActivitySerializer
     lookup_field = 'activity_id'
@@ -31,10 +20,18 @@ class ActivitiesView(ActivitiesBaseView,
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
     
-class ActivityCommentsView(ActivitiesBaseView,
-                          mixins.ListModelMixin,
-                          mixins.CreateModelMixin):
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
     
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+    
+class ActivityCommentsView(generics.GenericAPIView,
+                          mixins.ListModelMixin,
+                          mixins.CreateModelMixin,
+                          mixins.DestroyModelMixin):
+    
+    permission_classes = (Permissions.ActivityFriendReadOwnerModify, )
     serializer_class = Serializers.CommentSerializer
     lookup_field = "comment_id"
     
@@ -50,19 +47,17 @@ class ActivityCommentsView(ActivitiesBaseView,
         return self.create(request, *args, **kwargs)
     
     def delete(self, request, *args, **kwargs):
-        comment = self.get_object()
-        if comment.creator_id != request.user.user_id : self.permission_denied(request)
-        comment.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return self.destroy(request, *args, **kwargs)
     
     def get_queryset(self):
         activity_id = self.kwargs["activity_id"]
         commentsQuerySet = models.comments.objects.filter(activity_id=activity_id)
         return commentsQuerySet
     
-class ParticipantsView(ActivitiesBaseView,
-                         mixins.ListModelMixin):
+class ParticipantsView(generics.GenericAPIView,
+                       mixins.ListModelMixin):
     
+    permission_classes = (Permissions.ActivityFriendReadOwnerModify, )
     serializer_class = Serializers.ParticipantSerializer
     
     def get(self, request, *args, **kwargs):
