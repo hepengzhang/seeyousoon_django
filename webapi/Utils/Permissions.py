@@ -25,7 +25,7 @@ class ActivityFriendReadOwnerModify(AuthPermission):
         current_user_id = request.user.user_id
         creator_id = activity.creator_id
         isFriend = models.friends.objects.filter(user_id=creator_id, friend_id=current_user_id, status__gt=0).count()
-        return (activity.access < 1 or isFriend > 0)
+        return (current_user_id == creator_id or activity.access < 1 or isFriend > 0)
         
     def has_object_permission(self, request, view, obj):
         

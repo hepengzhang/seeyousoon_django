@@ -4,18 +4,20 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from webapi import models, SYSMessages
-from webapi.Utils import Serializers, PushNotification, Permissions
+from webapi.Utils import Serializers, PushNotification, Permissions, Mixins
 
 from datetime import datetime
 
 class ActivitiesView(generics.GenericAPIView,
                      mixins.RetrieveModelMixin,
                      mixins.DestroyModelMixin,
-                     mixins.UpdateModelMixin):
+                     Mixins.scopeUpdateModelMixin):
+    
     permission_classes = (Permissions.ActivityFriendReadOwnerModify, )
     queryset = models.activities.objects.all()
     serializer_class = Serializers.ActivitySerializer
     lookup_field = 'activity_id'
+    updateScope = ['access', 'type', 'status', 'description', 'longitude', 'latitude', 'destination', 'keyword', 'start_date', 'end_date']
     
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)

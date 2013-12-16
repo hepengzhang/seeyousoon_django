@@ -46,6 +46,20 @@ class ActivitiesTest(TestCase):
         countNow = models.activities.objects.filter(activity_id=activity_id).count()
         self.assertEqual(countNow, 0, "Activiy is not deleted in database")
         
+    def expectUpdate(self, activity_id, return_code, updateContents, expectResult):
+        if updateContents == None : updateContents = {}
+        url = get_activities_ID_url(activity_id)
+        
+        response = self.c.put(url, data=json.dumps(updateContents), content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+        
+        response = self.c.put(url, data=json.dumps(updateContents), content_type='application/json', HTTP_AUTHORIZATION=self.authorization)
+        self.assertEqual(response.status_code, return_code, response.content)
+        if return_code != 200 : return
+        response = json.loads(response.content)
+        self.assertDictContainsSubset(expected=expectResult, actual=response)
+        return response
+        
     def test_getMyAcitivity(self):
         self.expect("1", 200)
     
@@ -69,6 +83,19 @@ class ActivitiesTest(TestCase):
         
     def test_deleteOthersActivity(self):
         self.expectDeletedActivity("2", 403)
+        
+    def test_updateMyActivity(self):
+        updateContents = {u"access":1, u"keyword":u"updateKeyword"}
+        self.expectUpdate("1", 200, updateContents, updateContents)
+    
+    def test_updateMyActivityUnmodifiable(self):
+        updateContents = {"activity":2, "creator":{"user_id":2}}
+        expectContents = {"activity_id":1}
+        response = self.expectUpdate("1", 200, updateContents, expectContents)
+        self.assertEqual(response["creator"]["user_id"], 1)
+    
+    def test_updateOtherActivity(self):
+        self.expectUpdate("2", 403, None, None)
         
 # class activityTest(TestCase):
 #     
