@@ -41,7 +41,7 @@ class peopleTest(TestCase):
     def test_getNonFriend(self):
         url = get_people_url("2")
         response = self.c.get(url, HTTP_AUTHORIZATION=self.authentication)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
         
 class friendsTest(TestCase):
     

@@ -7,19 +7,10 @@ from webapi.Utils import Serializers, Permissions
 
 from django.db.models import Q
 
-class mustBeFriendView(generics.GenericAPIView):
-    
-    def check_permissions(self, request):
-        generics.GenericAPIView.check_permissions(self, request)
-        requested_user_id = long(self.kwargs["user_id"])
-        current_user_id = self.request.user.user_id
-        isFriend = models.friends.objects.filter(user=requested_user_id, friend=current_user_id, status__gt=0).count()
-        if requested_user_id != current_user_id and isFriend == 0:
-            self.permission_denied(self.request)
-
 class UserView(mixins.RetrieveModelMixin,
-               mustBeFriendView):
+               generics.GenericAPIView):
 
+    permission_classes = (Permissions.PeopleAllReadOwnerModify, )
     queryset = models.user_info.objects.all()
     serializer_class = Serializers.UserSerializer
     lookup_field = 'user_id'
@@ -28,8 +19,9 @@ class UserView(mixins.RetrieveModelMixin,
         return self.retrieve(request, *args, **kwargs)
     
 class FriendsView(mixins.ListModelMixin,
-                 mustBeFriendView):
+                  generics.GenericAPIView):
 
+    permission_classes = (Permissions.PeopleFriendReadOwnerModify, )
     queryset = models.friends.objects.all()
     serializer_class = Serializers.FriendsSerializer
 
@@ -50,9 +42,10 @@ class FriendsView(mixins.ListModelMixin,
             friends = Q(user_id=user_id, status__gt=0)
             return models.friends.objects.filter(request | friends)
 
-class ActivitiesView(mustBeFriendView,
+class ActivitiesView(generics.GenericAPIView,
                      mixins.ListModelMixin):
     
+    permission_classes = (Permissions.PeopleFriendReadOwnerModify, )
     serializer_class = Serializers.ActivitySerializer
     lookup_field = 'activity_id'
     
