@@ -1,22 +1,25 @@
 from rest_framework import mixins, generics
-from rest_framework.views import APIView
-from rest_framework.response import Response
 
 from webapi import models
-from webapi.Utils import Serializers, Permissions
+from webapi.Utils import Serializers, Permissions, Mixins
 
 from django.db.models import Q
 
-class UserView(mixins.RetrieveModelMixin,
-               generics.GenericAPIView):
+class UserView(generics.GenericAPIView,
+               mixins.RetrieveModelMixin,
+               Mixins.scopeUpdateModelMixin):
 
     permission_classes = (Permissions.PeopleAllReadOwnerModify, )
     queryset = models.user_info.objects.all()
     serializer_class = Serializers.UserSerializer
     lookup_field = 'user_id'
+    updateScope = ['email', 'last_login', 'user_access', 'longitude', 'latitude', 'gender', 'fb_id', 'wb_id', 'primary_sns', 'name', 'phone']
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
+    
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
     
 class FriendsView(mixins.ListModelMixin,
                   generics.GenericAPIView):

@@ -56,7 +56,7 @@ class PeopleAllReadOwnerModify(AuthPermission):
             return True
 
         current_user_id = request.user.user_id
-        requested_id = obj.creator_id
+        requested_id = obj.user_id
         return current_user_id == requested_id
     
 class PeopleFriendReadOwnerModify(AuthPermission):
