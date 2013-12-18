@@ -15,6 +15,7 @@ urlpatterns = patterns('',
     
     url(r'^people/(?P<user_id>\d+)$', PeopleViews.UserView.as_view()),
     url(r'^people/(?P<user_id>\d+)/friends/(?P<scope>(requests|friends|all))$', PeopleViews.FriendsView.as_view()),
+    url(r'^people/(?P<user_id>\d+)/friends(/(?P<friend_id>\d+))?$', PeopleViews.FriendsView.as_view()),
     url(r'^people/(?P<user_id>\d+)/activities$', PeopleViews.ActivitiesView.as_view()),
     
     url(r'^activities/(?P<activity_id>\d+)$', ActivityViews.ActivitiesView.as_view()),

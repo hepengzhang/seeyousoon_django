@@ -78,7 +78,7 @@ class push_notification(models.Model):
     activities = models.PositiveIntegerField(default=0)
     
 class friends(models.Model):
-    status = models.PositiveSmallIntegerField()
+    status = models.PositiveSmallIntegerField(default=0)
     user = customField.BigForeignKey(user_info,related_name="%(class)s_related_self", on_delete=models.CASCADE)
     friend = customField.BigForeignKey(user_info,related_name="%(class)s_related_friend", on_delete=models.CASCADE)
     together_time = models.IntegerField(default=0)
