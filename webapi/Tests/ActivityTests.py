@@ -89,10 +89,12 @@ class ActivitiesTest(TestCase):
         self.expectUpdate("1", 200, updateContents, updateContents)
     
     def test_updateMyActivityUnmodifiable(self):
-        updateContents = {"activity":2, "creator":{"user_id":2}}
+        updateContents = {"activity":2, "creator":{"user_id":2, "username":"testUpdate", "name":"testName"}}
         expectContents = {"activity_id":1}
         response = self.expectUpdate("1", 200, updateContents, expectContents)
         self.assertEqual(response["creator"]["user_id"], 1)
+        self.assertEqual(response["creator"]["username"], "hepengzhang")
+        self.assertEqual(response["creator"]["name"], "Hepeng Zhang")
     
     def test_updateOtherActivity(self):
         self.expectUpdate("2", 403, None, None)
