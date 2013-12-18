@@ -11,13 +11,12 @@ from datetime import datetime
 class ActivitiesView(generics.GenericAPIView,
                      mixins.RetrieveModelMixin,
                      mixins.DestroyModelMixin,
-                     Mixins.scopeUpdateModelMixin):
+                     mixins.UpdateModelMixin):
     
     permission_classes = (Permissions.ActivityFriendReadOwnerModify, )
     queryset = models.activities.objects.all()
     serializer_class = Serializers.ActivitySerializer
     lookup_field = 'activity_id'
-    updateScope = ['access', 'type', 'status', 'description', 'longitude', 'latitude', 'destination', 'keyword', 'start_date', 'end_date']
     
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -26,16 +25,17 @@ class ActivitiesView(generics.GenericAPIView,
         return self.destroy(request, *args, **kwargs)
     
     def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+        return self.partial_update(request, *args, **kwargs)
     
 class ActivityCommentsView(generics.GenericAPIView,
                           mixins.ListModelMixin,
-                          mixins.CreateModelMixin,
+                          Mixins.OverrideCreateModelMixin,
                           mixins.DestroyModelMixin):
     
     permission_classes = (Permissions.ActivityFriendReadOwnerModify, )
     serializer_class = Serializers.CommentSerializer
     lookup_field = "comment_id"
+    createScope = ['contents', 'activity']
     
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -43,10 +43,10 @@ class ActivityCommentsView(generics.GenericAPIView,
     """
     Required parameters:
     contents, unicode
-    """    
+    """
     def post(self, request, *args, **kwargs):
-        request.DATA.update({"activity":self.kwargs['activity_id'], "creator":request.user.user_id})
-        return self.create(request, *args, **kwargs)
+        override = {"activity":self.kwargs['activity_id'], "creator":request.user.user_id}
+        return self.create(request, override, *args, **kwargs)
     
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)

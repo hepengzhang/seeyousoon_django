@@ -11,7 +11,7 @@ def isFriend(current_user_id, requested_user_id):
 class AuthPermission(permissions.BasePermission):
     
     def safe_method(self):
-        return ('OPTION', 'HEAD')
+        return ['OPTION', 'HEAD']
 
     """
     Basic perrmission requires at least user_id and auth_token
@@ -48,7 +48,7 @@ class ActivityFriendReadOwnerModify(AuthPermission):
 class PeopleAllReadOwnerModify(AuthPermission):
     
     def safe_method(self):
-        return ('OPTION', 'HEAD', 'GET')
+        return AuthPermission.safe_method(self) + ['GET']
     
     def has_object_permission(self, request, view, obj):
         
@@ -60,9 +60,6 @@ class PeopleAllReadOwnerModify(AuthPermission):
         return current_user_id == requested_id
     
 class PeopleFriendReadOwnerModify(AuthPermission):
-    
-    def safe_method(self):
-        return ('OPTION', 'HEAD')
     
     def has_permission(self, request, view):
         if not AuthPermission.has_permission(self, request, view): return False
@@ -82,5 +79,16 @@ class PeopleFriendReadOwnerModify(AuthPermission):
             return isFriend(current_user_id, requested_user_id)
         else :
             return False
+        
+class AllAddFriendOwnerReadDeletePermission(AuthPermission):
+    
+    def safe_method(self):
+        return AuthPermission.safe_method(self)+['POST']
+    
+    def has_permission(self, request, view):
+        if not AuthPermission.has_permission(self, request, view): return False
+        if request.method in self.safe_method(): return True
+        return long(view.kwargs["user_id"]) == request.user.user_id
+    
         
         

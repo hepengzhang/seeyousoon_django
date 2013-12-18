@@ -21,14 +21,26 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
                 
+    def from_native(self, data, files):
+        model = super(DynamicFieldsModelSerializer, self).from_native(data, files)
+        if 'view' in self.context: 
+            pre_valid_model = getattr(self.context['view'], "pre_valid_model", None)
+            if callable(pre_valid_model):
+                self.context['view'].pre_valid_model(self, model)
+        return model
+                
 class UserSerializer(DynamicFieldsModelSerializer):
+    
     class Meta:
         model = models.user_info
+        read_only_fields = ('user_id', 'username', 'last_login', 'user_created_date')
         
 class ActivitySerializer(DynamicFieldsModelSerializer):
-    creator = UserSerializer()
+    creator = UserSerializer(read_only = True)
+    
     class Meta:
         model = models.activities
+        read_only_fields = ('activity_id', 'activity_created_date', 'num_of_participants', 'num_of_comments')
 
 class FriendsSerializer(DynamicFieldsModelSerializer):
     friend = UserSerializer()
