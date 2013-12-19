@@ -144,6 +144,10 @@ class participants(models.Model):
     entry_id = customField.PositiveBigAutoField(primary_key=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    def __repr__(self):
+        return {"activity":self.activity_id,
+                "participant":self.participant_id}
+    
     class Meta:
         unique_together = ("activity","participant")
 

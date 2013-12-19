@@ -17,6 +17,9 @@ def get_activityComment_url(activity_id):
 def get_activityParticipant_url(activity_id):
     return "/webapi/activities/"+activity_id+"/participants"
 
+def get_participant_id_url(activity_id, participant_id):
+    return "/webapi/activities/"+activity_id+"/participants/"+participant_id
+
 class ActivitiesTest(TestCase):
     fixtures = ['TestFixtures.json']
     authorization = "1 hepengzhangAT"
@@ -231,4 +234,31 @@ class ParticipantsTest(TestCase):
     
     def test_getUnaccessibleParticipants(self):
         self.expect("4", 403, 0)
+        
+    def expectDeleteParticipant(self, activity_id, entry_id, return_code):
+        url = get_participant_id_url(activity_id, entry_id)
+        response = self.c.delete(url, HTTP_AUTHORIZATION=self.authorization)
+        self.assertEqual(response.status_code, return_code)
+        
+    def test_deleteMyActivityParticipant(self):
+        self.expectDeleteParticipant("1", "2", 204)
+   
+    def test_deleteMyselfAsParticipant(self):
+        self.expectDeleteParticipant("1", "1", 204)
+    
+    def test_deleteOthersActivityParticipant(self):
+        self.expectDeleteParticipant("4", "3", 403)
+        
+    def expectJoinParticipant(self, activity_id, user_id, return_code):
+        url = get_activityParticipant_url(activity_id)
+        self.authorization = get_authorization_credential(self.fixtures, user_id)
+        response = self.c.post(url, data={}, content_type='application/json', HTTP_AUTHORIZATION=self.authorization)
+        self.assertEqual(response.status_code, return_code)
+        if response.status_code > 299 : return
+        
+    def test_joinUnaccessableActivity(self):
+        self.expectJoinParticipant("3", "2", 403)
+        
+    def test_joinAccessibleAcitivyt(self):
+        self.expectJoinParticipant("3", "1", 201)
     

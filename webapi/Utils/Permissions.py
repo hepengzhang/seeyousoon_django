@@ -94,9 +94,6 @@ class AllAddFriendOwnerReadDeletePermission(AuthPermission):
 
 class ParticipantPermission(ActivityFriendRead):
     
-    def safe_method(self):
-        return ActivityFriendRead.safe_method(self) + ['POST']
-    
     def has_object_permission(self, request, view, obj):
         isSelf = obj.participant_id == request.user.user_id
         isOwner = obj.activity.creator_id == request.user.user_id 

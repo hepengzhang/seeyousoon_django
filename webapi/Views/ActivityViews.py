@@ -58,7 +58,8 @@ class ActivityCommentsView(generics.GenericAPIView,
     
 class ParticipantsView(generics.GenericAPIView,
                        mixins.ListModelMixin,
-                       mixins.DestroyModelMixin):
+                       mixins.DestroyModelMixin,
+                       mixins.CreateModelMixin):
     
     permission_classes = (Permissions.ParticipantPermission, )
     serializer_class = Serializers.ParticipantSerializer
@@ -75,6 +76,13 @@ class ParticipantsView(generics.GenericAPIView,
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
     
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+    
+    def pre_valid_model(self, serializer, model):
+        model.participant_id = long(self.request.user.user_id)
+        model.activity_id = long(self.kwargs['activity_id'])
+        
 class SearchAcitivityView(APIView):
     def get(self, request):
         if request.QUERY_PARAMS['type']=='nearby':#return all nearby public activities

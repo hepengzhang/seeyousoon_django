@@ -23,6 +23,7 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                 
     def from_native(self, data, files):
         model = super(DynamicFieldsModelSerializer, self).from_native(data, files)
+        if model == None: model = self.Meta.model()
         if 'view' in self.context: 
             pre_valid_model = getattr(self.context['view'], "pre_valid_model", None)
             if callable(pre_valid_model):
@@ -53,6 +54,7 @@ class CommentSerializer(DynamicFieldsModelSerializer):
         model = models.comments
         
 class ParticipantSerializer(DynamicFieldsModelSerializer):
-    participant = UserSerializer()
+    participant = UserSerializer(read_only=True)
     class Meta:
         model = models.participants
+        read_only_fields = ('updated_at', 'activity',)
