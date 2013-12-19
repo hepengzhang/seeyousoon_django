@@ -57,10 +57,12 @@ class ActivityCommentsView(generics.GenericAPIView,
         return commentsQuerySet
     
 class ParticipantsView(generics.GenericAPIView,
-                       mixins.ListModelMixin):
+                       mixins.ListModelMixin,
+                       mixins.DestroyModelMixin):
     
-    permission_classes = (Permissions.ActivityFriendReadOwnerModify, )
+    permission_classes = (Permissions.ParticipantPermission, )
     serializer_class = Serializers.ParticipantSerializer
+    lookup_field = 'entry_id'
     
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -69,8 +71,10 @@ class ParticipantsView(generics.GenericAPIView,
         activity_id = self.kwargs['activity_id']
         peopleQuerySet = models.participants.objects.filter(activity_id=activity_id)
         return peopleQuerySet
-
-
+    
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+    
 class SearchAcitivityView(APIView):
     def get(self, request):
         if request.QUERY_PARAMS['type']=='nearby':#return all nearby public activities

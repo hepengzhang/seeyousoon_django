@@ -3,6 +3,8 @@ from django.test.client import Client
 import simplejson as json
 from webapi import models
 
+from TestUtils import get_authorization_credential
+
 API_ACTIVITY_URL = "/webapi/activity"
 API_COMMENT_URL = "/webapi/activity/comment"
 
@@ -209,8 +211,10 @@ class CommentsTest(TestCase):
 
 class ParticipantsTest(TestCase):
     fixtures = ['TestFixtures.json']
-    authorization = u"1 hepengzhangAT"
     c = Client()
+
+    def setUp(self):
+        self.authorization = get_authorization_credential(self.fixtures, "1")
     
     def expect(self, activity_id, return_code, expectedNumParticipants):
         url = get_activityParticipant_url(activity_id)

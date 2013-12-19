@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test.client import Client
 import simplejson as json
 
-from TestUtils import get_authorization_header
+from TestUtils import get_authorization_credential
 
 from webapi import models
 
@@ -76,7 +76,7 @@ class friendsTest(TestCase):
     c = Client()
     
     def setUp(self):
-        self.authorization = get_authorization_header(self.fixtures, 1)
+        self.authorization = get_authorization_credential(self.fixtures, 1)
         
     def expectGetFriends(self, user_id, return_code, scope, expectedFriendsNum):
         url = get_friends_url(user_id, scope)
@@ -113,7 +113,7 @@ class friendsTest(TestCase):
         
     def expectAddFriend(self, user_id, friend_id, return_code, friend_status):
         url = add_friends_url(friend_id)
-        self.authorization = get_authorization_header(self.fixtures, user_id)
+        self.authorization = get_authorization_credential(self.fixtures, user_id)
         response = self.c.post(url, {}, HTTP_AUTHORIZATION=self.authorization)
         self.assertEqual(response.status_code, return_code)
         if response.status_code != return_code: return

@@ -1,6 +1,6 @@
 import json
 
-def get_authorization_header(fixtures, user_id):
+def get_authorization_credential(fixtures, user_id):
     
     user_id = long(user_id)
     json_data = [open("webapi/fixtures/"+fixture).read() for fixture in fixtures]
