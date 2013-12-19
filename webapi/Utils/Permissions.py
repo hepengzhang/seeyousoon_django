@@ -19,7 +19,7 @@ class AuthPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         return type(request.user) != AnonymousUser
 
-class ActivityFriendReadOwnerModify(AuthPermission):
+class ActivityFriendRead(AuthPermission):
     
     def has_permission(self, request, view):
         if request.method in self.safe_method(): 
@@ -32,6 +32,8 @@ class ActivityFriendReadOwnerModify(AuthPermission):
         creator_id = activity.creator_id
         return (activity.access < 1 
                 or isFriend(current_user_id, creator_id))
+
+class ActivityFriendReadOwnerModify(ActivityFriendRead):
         
     def has_object_permission(self, request, view, obj):
         
@@ -89,6 +91,16 @@ class AllAddFriendOwnerReadDeletePermission(AuthPermission):
         if not AuthPermission.has_permission(self, request, view): return False
         if request.method in self.safe_method(): return True
         return long(view.kwargs["user_id"]) == request.user.user_id
+
+class ParticipantPermission(ActivityFriendRead):
     
+    def safe_method(self):
+        return ActivityFriendRead.safe_method(self) + ['POST']
+    
+    def has_object_permission(self, request, view, obj):
+        isSelf = obj.participant_id == request.user.user_id
+        isOwner = obj.activity.creator_id == request.user.user_id 
+        return isSelf or isOwner
+        
         
         
