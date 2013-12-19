@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from webapi import models
-from webapi.Utils import Serializers, Permissions, Mixins
+from webapi.Utils import Serializers, Permissions
 
 from django.db.models import Q
 
@@ -70,7 +70,7 @@ class FriendsView(mixins.ListModelMixin,
 
 class ActivitiesView(generics.GenericAPIView,
                      mixins.ListModelMixin,
-                     Mixins.OverrideCreateModelMixin):
+                     mixins.CreateModelMixin):
     
     permission_classes = (Permissions.PeopleFriendReadOwnerModify, )
     serializer_class = Serializers.ActivitySerializer
@@ -81,9 +81,7 @@ class ActivitiesView(generics.GenericAPIView,
         return self.list(request, *args, **kwargs)
     
     def post(self, request, *args, **kwargs):
-        self.creator_id = request.user.user_id
-        override = {"creator":{"user_id":request.user.user_id}}
-        return self.create(request, override, *args, **kwargs)
+        return self.create(request, *args, **kwargs)
     
     def pre_valid_model(self, serializer, model):
         model.creator_id = self.request.user.user_id
