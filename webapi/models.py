@@ -65,9 +65,8 @@ class user_auth(models.Model):
 # full text search - how to deal with?
 #===============================================================================
 class user_search(models.Model):
-    username = models.CharField(max_length=32)
     user = customField.BigForeignKey(user_info, primary_key=True, on_delete=models.CASCADE)
-    name = models.CharField(max_length=32,blank=True)
+    search_index = models.CharField(max_length=65)
     
 class push_notification(models.Model):
     user = customField.BigForeignKey(user_info, primary_key=True, on_delete=models.CASCADE)

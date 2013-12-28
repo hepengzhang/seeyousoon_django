@@ -18,14 +18,14 @@ class registerTest(TestCase):
         pass
     
     def test_NewUser(self):
-        paraDict = {'email':'test@test.com', 'username':'hepengzhangNew', 'password':'testpassordAuthNew' }
+        paraDict = {'email':'test@test.com', 'username':'hepengzhangNew', 'password':'testpassordAuthNew', "name":"Hepeng Zhang" }
         response = self.c.post(API_REGISTER_URL, data=json.dumps(paraDict), content_type='application/json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response = json.loads(response.content)
         
         self.assertIsNotNone(response['access_token'])
-        fields = response['user_info']
-        self.assertTrue('user_info' in response)
+        fields = response['user']
+        self.assertTrue('user' in response)
         self.assertEqual(fields['username'], paraDict['username'], 'return wrong username')
         self.assertEqual(fields['email'], paraDict['email'], 'return wrong email')
         
@@ -33,7 +33,8 @@ class registerTest(TestCase):
         self.assertEqual(len(info), 1, 'not inserted in database user_info')
         auth = models.user_auth.objects.filter(username=paraDict['username'])
         self.assertEqual(len(auth), 1, 'not inserted in database user_auth')
-        search = models.user_search.objects.filter(username=paraDict['username'])
+        search_keyword = "{} {}".format(paraDict['username'], paraDict['name'])
+        search = models.user_search.objects.filter(search_index=search_keyword)
         self.assertEqual(len(search), 1, 'not inserted in database user_search')
         pass
     

@@ -171,48 +171,42 @@
     "pk": 1,
     "model": "webapi.user_search",
     "fields": {
-      "username": "hepengzhang",
-      "name": "Hepeng Zhang"
+      "search_index": "hepengzhang Hepeng Zhang"
     }
   },
   {
     "pk": 2,
     "model": "webapi.user_search",
     "fields": {
-      "username": "yimingkang",
-      "name": "Yiming Kang"
+      "search_index": "yimingkang Yiming Kang"
     }
   },
   {
     "pk": 3,
     "model": "webapi.user_search",
     "fields": {
-      "username": "dingniwu",
-      "name": "Dingni Wu"
+      "search_index": "dingniwu Dingni Wu"
     }
   },
   {
     "pk": 4,
     "model": "webapi.user_search",
     "fields": {
-      "username": "xintongwang",
-      "name": "Xintong Wang"
+      "search_index": "xintongwang Xintong Wang"
     }
   },
   {
     "pk": 5,
     "model": "webapi.user_search",
     "fields": {
-      "username": "liqu",
-      "name": "Li Qu"
+      "search_index": "liqu Li Qu"
     }
   },
   {
     "pk": 6,
     "model": "webapi.user_search",
     "fields": {
-      "username": "wanwenhan",
-      "name": "Wanwen Han"
+      "search_index": "wanwenhan Wanwen Han"
     }
   },
   {

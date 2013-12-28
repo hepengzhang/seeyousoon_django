@@ -31,8 +31,7 @@
     "pk": 1,
     "model": "webapi.user_search",
     "fields": {
-      "username": "AuthTest",
-      "name": "Hepeng Zhang"
+      "search_index": "AuthTest Hepeng Zhang"
     }
   }
 ]
