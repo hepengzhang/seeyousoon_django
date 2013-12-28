@@ -48,14 +48,23 @@ class ActivityCommentsView(generics.GenericAPIView,
         override = {"activity":self.kwargs['activity_id'], "creator":request.user.user_id}
         return self.create(request, override, *args, **kwargs)
     
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
-    
     def get_queryset(self):
         activity_id = self.kwargs["activity_id"]
         commentsQuerySet = models.comments.objects.filter(activity_id=activity_id)
         return commentsQuerySet
     
+class ActivityCommentView(generics.GenericAPIView,
+                          mixins.ListModelMixin,
+                          Mixins.OverrideCreateModelMixin,
+                          mixins.DestroyModelMixin):
+    
+    permission_classes = (Permissions.ActivityFriendReadOwnerModify, )
+    serializer_class = Serializers.CommentSerializer
+    lookup_field = "comment_id"
+    
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+        
 class ParticipantsView(generics.GenericAPIView,
                        mixins.ListModelMixin,
                        mixins.DestroyModelMixin,
@@ -63,7 +72,6 @@ class ParticipantsView(generics.GenericAPIView,
     
     permission_classes = (Permissions.ParticipantPermission, )
     serializer_class = Serializers.ParticipantSerializer
-    lookup_field = 'entry_id'
     
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -72,16 +80,25 @@ class ParticipantsView(generics.GenericAPIView,
         activity_id = self.kwargs['activity_id']
         peopleQuerySet = models.participants.objects.filter(activity_id=activity_id)
         return peopleQuerySet
-    
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
-    
+        
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
     
     def pre_valid_model(self, serializer, model):
         model.participant_id = long(self.request.user.user_id)
         model.activity_id = long(self.kwargs['activity_id'])
+        
+class ParticipantView(generics.GenericAPIView,
+                       mixins.ListModelMixin,
+                       mixins.DestroyModelMixin,
+                       mixins.CreateModelMixin):
+    
+    permission_classes = (Permissions.ParticipantPermission, )
+    serializer_class = Serializers.ParticipantSerializer
+    lookup_field = 'entry_id'
+        
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
         
 class SearchAcitivityView(APIView):
     def get(self, request):

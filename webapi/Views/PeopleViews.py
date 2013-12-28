@@ -33,13 +33,26 @@ class FriendsView(mixins.ListModelMixin,
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
     
-    def delete(self, request, *args, **kwargs):
-        current_user_id = request.user.user_id
-        friend_user_id = self.kwargs['friend_id']
-        models.friends.objects.filter(user_id=current_user_id, friend_id=friend_user_id).delete()
-        models.friends.objects.filter(friend_id=current_user_id, user_id=friend_user_id).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
+    def get_queryset(self):
+        user_id = self.kwargs["user_id"]
+        scope = self.kwargs["scope"]
+        if scope == "requests":
+            return models.friends.objects.filter(friend_id=user_id, status=0)
+        elif scope == "friends":
+            return models.friends.objects.filter(user_id=user_id, status__gt=0)
+        else :
+            request = Q(friend_id=user_id, status=0)
+            friends = Q(user_id=user_id, status__gt=0)
+            return models.friends.objects.filter(request | friends)
+
+class AddFriendsView(mixins.ListModelMixin,
+                  mixins.DestroyModelMixin,
+                  generics.GenericAPIView):
+
+    permission_classes = (Permissions.AllAddFriendOwnerReadDeletePermission,)
+    queryset = models.friends.objects.all()
+    serializer_class = Serializers.FriendsSerializer
+ 
     def post(self, request, *args, **kwargs):
         current_user_id = request.user.user_id
         requested_user_id = self.kwargs['user_id']
@@ -55,18 +68,20 @@ class FriendsView(mixins.ListModelMixin,
             models.friends.objects.create(user_id=current_user_id, friend_id=requested_user_id, status=0)
             
         return Response(status=status.HTTP_201_CREATED)
+
+class FriendView(mixins.DestroyModelMixin,
+                 generics.GenericAPIView):
+
+    permission_classes = (Permissions.AllAddFriendOwnerReadDeletePermission,)
+    queryset = models.friends.objects.all()
+    serializer_class = Serializers.FriendsSerializer
     
-    def get_queryset(self):
-        user_id = self.kwargs["user_id"]
-        scope = self.kwargs["scope"]
-        if scope == "requests":
-            return models.friends.objects.filter(friend_id=user_id, status=0)
-        elif scope == "friends":
-            return models.friends.objects.filter(user_id=user_id, status__gt=0)
-        else :
-            request = Q(friend_id=user_id, status=0)
-            friends = Q(user_id=user_id, status__gt=0)
-            return models.friends.objects.filter(request | friends)
+    def delete(self, request, *args, **kwargs):
+        current_user_id = request.user.user_id
+        friend_user_id = self.kwargs['friend_id']
+        models.friends.objects.filter(user_id=current_user_id, friend_id=friend_user_id).delete()
+        models.friends.objects.filter(friend_id=current_user_id, user_id=friend_user_id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class ActivitiesView(generics.GenericAPIView,
                      mixins.ListModelMixin,
