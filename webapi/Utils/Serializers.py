@@ -58,3 +58,7 @@ class ParticipantSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = models.participants
         read_only_fields = ('updated_at', 'activity',)
+
+class TimelineSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = models.user_timeline

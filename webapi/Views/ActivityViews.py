@@ -8,10 +8,10 @@ from webapi.Utils import Serializers, PushNotification, Permissions, Mixins
 
 from datetime import datetime
 
+
 class ActivitiesView(generics.GenericAPIView,
                      mixins.RetrieveModelMixin,
                      mixins.UpdateModelMixin):
-
     permission_classes = (Permissions.ActivityFriendReadOwnerModify, )
     queryset = models.activities.objects.all()
     serializer_class = Serializers.ActivitySerializer
@@ -22,19 +22,23 @@ class ActivitiesView(generics.GenericAPIView,
 
     def delete(self, request, *args, **kwargs):
         obj = self.get_object()
-        obj.status = -1 # change status of activity to unavailable
+        obj.status = -1  # change status of activity to unavailable
         obj.save()
-        models.user_timeline.objects.create(user1=request.user, activity=obj)
+        models.user_timeline.objects.create(user=request.user, activity=obj, type=models.TIMELINE_DELETE_ACTIVITY)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def put(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
 
-class ActivityCommentsView(generics.GenericAPIView,
-                          mixins.ListModelMixin,
-                          Mixins.OverrideCreateModelMixin,
-                          mixins.DestroyModelMixin):
+    def post_save(self, obj, created=False):
+        models.user_timeline.objects.create(user=self.request.user, activity=self.object,
+                                            type=models.TIMELINE_MODIFY_ACTIVITY)
 
+
+class ActivityCommentsView(generics.GenericAPIView,
+                           mixins.ListModelMixin,
+                           Mixins.OverrideCreateModelMixin,
+                           mixins.DestroyModelMixin):
     permission_classes = (Permissions.ActivityFriendReadOwnerModify, )
     serializer_class = Serializers.CommentSerializer
     lookup_field = "comment_id"
@@ -47,20 +51,19 @@ class ActivityCommentsView(generics.GenericAPIView,
     Required parameters:
     contents, unicode
     """
+
     def post(self, request, *args, **kwargs):
-        override = {"activity":self.kwargs['activity_id'], "creator":request.user.user_id}
+        override = {"activity": self.kwargs['activity_id'], "creator": request.user.user_id}
         return self.create(request, override, *args, **kwargs)
 
     def get_queryset(self):
-        activity_id = self.kwargs["activity_id"]
-        commentsQuerySet = models.comments.objects.filter(activity_id=activity_id)
-        return commentsQuerySet
+        return models.comments.objects.filter(activity_id=self.kwargs["activity_id"])
+
 
 class ActivityCommentView(generics.GenericAPIView,
                           mixins.ListModelMixin,
                           Mixins.OverrideCreateModelMixin,
                           mixins.DestroyModelMixin):
-
     permission_classes = (Permissions.CreatorModify,)
     serializer_class = Serializers.CommentSerializer
     lookup_field = "comment_id"
@@ -69,11 +72,11 @@ class ActivityCommentView(generics.GenericAPIView,
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
+
 class ParticipantsView(generics.GenericAPIView,
                        mixins.ListModelMixin,
                        mixins.DestroyModelMixin,
                        mixins.CreateModelMixin):
-
     permission_classes = (Permissions.ParticipantPermission, )
     serializer_class = Serializers.ParticipantSerializer
 
@@ -81,117 +84,125 @@ class ParticipantsView(generics.GenericAPIView,
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
-        activity_id = self.kwargs['activity_id']
-        peopleQuerySet = models.participants.objects.filter(activity_id=activity_id)
-        return peopleQuerySet
+        return models.participants.objects.filter(activity_id=self.kwargs['activity_id'])
 
     def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+        response = self.create(request, *args, **kwargs)
+        if response.status_code < 300:
+            models.user_timeline.objects.create(user=self.request.user, activity_id=self.kwargs['activity_id'],
+                                                type=models.TIMELINE_JOIN_ACTIVITY)
+        return response
 
     def pre_valid_model(self, serializer, model):
         model.participant_id = long(self.request.user.user_id)
         model.activity_id = long(self.kwargs['activity_id'])
 
-class ParticipantView(generics.GenericAPIView,
-                       mixins.ListModelMixin,
-                       mixins.DestroyModelMixin,
-                       mixins.CreateModelMixin):
 
+class ParticipantView(generics.GenericAPIView,
+                      mixins.ListModelMixin,
+                      mixins.DestroyModelMixin,
+                      mixins.CreateModelMixin):
     permission_classes = (Permissions.ParticipantPermission, )
     serializer_class = Serializers.ParticipantSerializer
     lookup_field = 'entry_id'
     queryset = models.participants.objects.all()
 
     def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
+        obj = self.get_object()
+        models.user_timeline.objects.create(user=self.request.user, activity_id=obj.activity_id,
+                                            type=models.TIMELINE_QUIT_ACTIVITY)
+        obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class SearchAcitivityView(APIView):
     def get(self, request):
-        if request.QUERY_PARAMS['type']=='nearby':#return all nearby public activities
+        if request.QUERY_PARAMS['type'] == 'nearby':#return all nearby public activities
             return Response(SYSMessages.SYSMESSAGE_ERROR_NOTIMPLEMENTED, status.HTTP_501_NOT_IMPLEMENTED)
-        if request.QUERY_PARAMS['type']=='friends':#return all friends's visible activities
+        if request.QUERY_PARAMS['type'] == 'friends':#return all friends's visible activities
             uid = request.QUERY_PARAMS['user_id']
             timeMin = request.QUERY_PARAMS['min_date'];
             timeMax = request.QUERY_PARAMS['max_date'];
 
             user_self = models.user_info.objects.get(pk=uid)
-            friendsList = models.friends.objects.filter(user=user_self, status__gt=0).values_list('friend_id',flat=True)
+            friendsList = models.friends.objects.filter(user=user_self, status__gt=0).values_list('friend_id',
+                                                                                                  flat=True)
             friendsList = [uid] + list(friendsList)
             queryset = models.activities.objects.select_related().filter(creator__in=friendsList,
-                                                          activity_created_date__gt=timeMin,
-                                                          activity_created_date__lt=timeMax,
-                                                          access__lt=2)
+                                                                         activity_created_date__gt=timeMin,
+                                                                         activity_created_date__lt=timeMax,
+                                                                         access__lt=2)
             activities = queryset.order_by('-activity_created_date')[:50]
             activities = [a for a in activities]
             serializer = Serializers.ActivitySerializer(activities, many=True)
-            result = {"activities":serializer.data}
+            result = {"activities": serializer.data}
             return Response(result)
 
     def post(self, request):
         paraDict = request.DATA
-        activity = models.activities(keyword=paraDict['keyword'], creator_id=paraDict['user_id'],access=paraDict['access'])
+        activity = models.activities(keyword=paraDict['keyword'], creator_id=paraDict['user_id'],
+                                     access=paraDict['access'])
 
         #add to database
-        if 'type' in paraDict: activity.type=paraDict['type']
-        if 'status' in paraDict: activity.status=paraDict['status']
-        if 'description' in paraDict: activity.description=paraDict['description']
+        if 'type' in paraDict: activity.type = paraDict['type']
+        if 'status' in paraDict: activity.status = paraDict['status']
+        if 'description' in paraDict: activity.description = paraDict['description']
 
         dtformat = "%Y-%m-%dT%H:%M:%S"
-        if 'start_date' in paraDict: activity.start_date=datetime.strptime(paraDict['start_date'], dtformat)
-        if 'end_date' in paraDict: activity.end_date=datetime.strptime(paraDict['end_date'], dtformat)
-        if 'latitude' in paraDict: activity.latitude=paraDict['latitude']
-        if 'longitude' in paraDict: activity.longitude=paraDict['longitude']
-        if 'destination' in paraDict: activity.destination=paraDict['destination']
+        if 'start_date' in paraDict: activity.start_date = datetime.strptime(paraDict['start_date'], dtformat)
+        if 'end_date' in paraDict: activity.end_date = datetime.strptime(paraDict['end_date'], dtformat)
+        if 'latitude' in paraDict: activity.latitude = paraDict['latitude']
+        if 'longitude' in paraDict: activity.longitude = paraDict['longitude']
+        if 'destination' in paraDict: activity.destination = paraDict['destination']
 
         activity.save()
 
         activity_id = activity.activity_id
-        if paraDict['access']=='2':
+        if paraDict['access'] == '2':
             #get the invited friends list
             friends_list = paraDict['invited_list']
             for user_id in friends_list:
-                models.participants.objects.create(activity=activity_id,participant=user_id)
+                models.participants.objects.create(activity=activity_id, participant=user_id)
                 PushNotification.SYSNotify(user_id, u"You are invited to a new event")
-            models.participants.objects.create(activity=activity_id,participant=paraDict['user_id'],status=1)
+            models.participants.objects.create(activity=activity_id, participant=paraDict['user_id'], status=1)
 
         serializer = Serializers.ActivitySerializer(activity)
-        result = {"activity":serializer.data}
+        result = {"activity": serializer.data}
         return Response(result)
 
     def delete(self, request):
         pass
 
-class ActivityComments(APIView):
 
+class ActivityComments(APIView):
     def get(self, request):
         offset = int(request.QUERY_PARAMS['offset'])
         number = int(request.QUERY_PARAMS['number'])
         activity_id = request.QUERY_PARAMS['activity_id']
         results = models.comments.objects.filter(activity_id=activity_id)
-        results = results.order_by('-created_date')[offset:offset+number]
+        results = results.order_by('-created_date')[offset:offset + number]
         results = [a for a in results]
 
         serializer = Serializers.CommentSerializer(results, many=True)
 
-        results = {"comments":serializer.data,
-                   "offset":offset,
-                   "number":len(results)}
+        results = {"comments": serializer.data,
+                   "offset": offset,
+                   "number": len(results)}
 
         return Response(results)
 
     def post(self, request):
-
         paraDict = request.DATA
         user_id = paraDict['user_id']
         contents = paraDict['contents']
         activity_id = paraDict['activity_id']
 
-        models.comments.objects.create(creator_id=user_id, activity_id=activity_id,contents=contents)
+        models.comments.objects.create(creator_id=user_id, activity_id=activity_id, contents=contents)
         activity = models.activities.objects.get(pk=activity_id)
         activity.num_of_comments += 1
         activity.save()
 
-        return Response({'message':'success'})
+        return Response({'message': 'success'})
 
     def delete(self, request):
         user_id = request.DATA['user_id']
@@ -203,4 +214,4 @@ class ActivityComments(APIView):
         activity.num_of_comments -= 1
         activity.save()
 
-        return Response({'message':'success'})
+        return Response({'message': 'success'})

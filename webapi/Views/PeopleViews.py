@@ -7,10 +7,10 @@ from webapi.Utils import Serializers, Permissions
 
 from django.db.models import Q
 
+
 class UserView(generics.GenericAPIView,
                mixins.RetrieveModelMixin,
                mixins.UpdateModelMixin):
-
     permission_classes = (Permissions.PeopleAllReadOwnerModify, )
     queryset = models.user_info.objects.all()
     serializer_class = Serializers.UserSerializer
@@ -18,21 +18,21 @@ class UserView(generics.GenericAPIView,
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
-    
+
     def put(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
-    
+
+
 class FriendsView(mixins.ListModelMixin,
                   mixins.DestroyModelMixin,
                   generics.GenericAPIView):
-
     permission_classes = (Permissions.AllAddFriendOwnerReadDeletePermission,)
     queryset = models.friends.objects.all()
     serializer_class = Serializers.FriendsSerializer
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
-    
+
     def get_queryset(self):
         user_id = self.kwargs["user_id"]
         scope = self.kwargs["scope"]
@@ -40,19 +40,19 @@ class FriendsView(mixins.ListModelMixin,
             return models.friends.objects.filter(friend_id=user_id, status=0)
         elif scope == "friends":
             return models.friends.objects.filter(user_id=user_id, status__gt=0)
-        else :
+        else:
             request = Q(friend_id=user_id, status=0)
             friends = Q(user_id=user_id, status__gt=0)
             return models.friends.objects.filter(request | friends)
 
-class AddFriendsView(mixins.ListModelMixin,
-                  mixins.DestroyModelMixin,
-                  generics.GenericAPIView):
 
+class AddFriendsView(mixins.ListModelMixin,
+                     mixins.DestroyModelMixin,
+                     generics.GenericAPIView):
     permission_classes = (Permissions.AllAddFriendOwnerReadDeletePermission,)
     queryset = models.friends.objects.all()
     serializer_class = Serializers.FriendsSerializer
- 
+
     def post(self, request, *args, **kwargs):
         current_user_id = request.user.user_id
         requested_user_id = self.kwargs['user_id']
@@ -64,18 +64,22 @@ class AddFriendsView(mixins.ListModelMixin,
             r2.status = 1
             r1.save()
             r2.save()
+            models.user_timeline.objects.create(user_id=current_user_id, related_user_id=requested_user_id,
+                                                type=models.TIMELINE_BECOME_FRIENDS)
+            models.user_timeline.objects.create(related_user_id=current_user_id, user_id=requested_user_id,
+                                                type=models.TIMELINE_BECOME_FRIENDS)
         else:
             models.friends.objects.create(user_id=current_user_id, friend_id=requested_user_id, status=0)
-            
+
         return Response(status=status.HTTP_201_CREATED)
+
 
 class FriendView(mixins.DestroyModelMixin,
                  generics.GenericAPIView):
-
     permission_classes = (Permissions.AllAddFriendOwnerReadDeletePermission,)
     queryset = models.friends.objects.all()
     serializer_class = Serializers.FriendsSerializer
-    
+
     def delete(self, request, *args, **kwargs):
         current_user_id = request.user.user_id
         friend_user_id = self.kwargs['friend_id']
@@ -83,24 +87,40 @@ class FriendView(mixins.DestroyModelMixin,
         models.friends.objects.filter(friend_id=current_user_id, user_id=friend_user_id).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 class ActivitiesView(generics.GenericAPIView,
                      mixins.ListModelMixin,
                      mixins.CreateModelMixin):
-    
     permission_classes = (Permissions.PeopleFriendReadOwnerModify, )
     serializer_class = Serializers.ActivitySerializer
     lookup_field = 'activity_id'
-    createScope = ['access', 'type', 'status', 'description', 'longitude', 'latitude', 'destination', 'keyword', 'start_date', 'end_date']
-    
+
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
-    
+
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
-    
+
     def pre_valid_model(self, serializer, model):
         model.creator_id = self.request.user.user_id
-    
+
+    def post_save(self, obj, created=False):
+        models.user_timeline.objects.create(user=self.request.user, activity=obj, type=models.TIMELINE_CREATE_ACTIVITY)
+
     def get_queryset(self):
         user_id = self.kwargs["user_id"]
         return models.activities.objects.filter(creator=user_id)
+
+
+class TimelineView(generics.GenericAPIView,
+                   mixins.ListModelMixin):
+    permission_classes = (Permissions.PeopleFriendReadOwnerModify,)
+    serializer_class = Serializers.TimelineSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        user_id = self.kwargs["user_id"]
+        return models.user_timeline.objects.exclude(related_user_id=user_id).filter(user_id=user_id).order_by(
+            '-createdDate')[:50]
