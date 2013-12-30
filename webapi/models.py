@@ -161,17 +161,26 @@ class participants(models.Model):
 #===============================================================================
 # Type:
 # 0: Undefined
-# 1: user1 join activity
-# 2: user1 created activity
-# 3: user1 quited activity
-# 4: user1 deleted activity
-# 5: user1 modified activity
-# 6: user1 and user2 now are friends
+# 1: user join activity
+# 2: user created activity
+# 3: user quited activity
+# 4: user deleted activity
+# 5: user modified activity
+# 6: user and related_user now are friends
 #===============================================================================
+TIMELINE_JOIN_ACTIVITY = 1
+TIMELINE_CREATE_ACTIVITY = 2
+TIMELINE_QUIT_ACTIVITY = 3
+TIMELINE_DELETE_ACTIVITY = 4
+TIMELINE_MODIFY_ACTIVITY = 5
+TIMELINE_BECOME_FRIENDS = 6
+
+
 class user_timeline(models.Model):
     timeline_id = customField.PositiveBigAutoField(primary_key=True)
-    type = models.SmallIntegerField(default=1)
-    user1 = customField.BigForeignKey(user_info, related_name="%(class)s_user1", on_delete=models.CASCADE, db_index=True)
-    user2 = customField.BigForeignKey(user_info, related_name="%(class)s_user2", on_delete=models.CASCADE, null=True)
-    activity = customField.BigForeignKey(activities, on_delete=models.CASCADE)
+    type = models.SmallIntegerField()
+    user = customField.BigForeignKey(user_info, related_name="%(class)s_user", on_delete=models.CASCADE, db_index=True)
+    related_user = customField.BigForeignKey(user_info, related_name="%(class)s_related_user", on_delete=models.CASCADE,
+                                             null=True)
+    activity = customField.BigForeignKey(activities, null=True, on_delete=models.CASCADE)
     createdDate = models.DateTimeField(auto_now_add=True, db_index=True)
