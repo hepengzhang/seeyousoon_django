@@ -34,30 +34,30 @@ class UserSerializer(DynamicFieldsModelSerializer):
     
     class Meta:
         model = models.user_info
-        read_only_fields = ('user_id', 'username', 'last_login', 'user_created_date')
+        read_only_fields = ('user_id', 'username', 'last_login')
         
 class ActivitySerializer(DynamicFieldsModelSerializer):
     creator = UserSerializer(read_only = True)
     
     class Meta:
         model = models.activities
-        read_only_fields = ('activity_id', 'activity_created_date', 'num_of_participants', 'num_of_comments')
+        read_only_fields = ('activity_id', 'created_date', 'num_of_participants', 'num_of_comments')
 
 class FriendsSerializer(DynamicFieldsModelSerializer):
     friend = UserSerializer()
     class Meta:
         model = models.friends
-        fields = ("friend", "status", "together_time", "updated_at")
+        fields = ("friend", "status", "together_time", "updated_date")
 
 class CommentSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = models.comments
         
 class ParticipantSerializer(DynamicFieldsModelSerializer):
-    participant = UserSerializer(read_only=True)
+    # participant = UserSerializer(read_only=True)
     class Meta:
         model = models.participants
-        read_only_fields = ('updated_at', 'activity',)
+        read_only_fields = ('updated_date', 'activity', 'participant')
 
 class TimelineSerializer(DynamicFieldsModelSerializer):
     class Meta:

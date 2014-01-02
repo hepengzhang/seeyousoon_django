@@ -35,7 +35,7 @@ class MyTestCase(TestCase):
 
     def test_timeline_quit_activity(self):
         self.authorization = TestUtils.get_authorization_credential(self.fixtures, '3')
-        url = TestUtils.get_participant_id_url('1', '2')
+        url = TestUtils.get_participant_id_url('1', '3')
         self.c.delete(url, HTTP_AUTHORIZATION=self.authorization)
         self.expect_new_timeline('3', '1', models.TIMELINE_QUIT_ACTIVITY, None)
 

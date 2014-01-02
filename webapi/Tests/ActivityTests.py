@@ -4,7 +4,7 @@ import simplejson as json
 from webapi import models
 
 from TestUtils import get_authorization_credential, get_activities_ID_url, get_activityComment_url, \
-    get_activityParticipant_url, get_participant_id_url
+    get_activityParticipant_url, get_participant_id_url, delete_activityComment_url
 
 
 class ActivitiesTest(TestCase):
@@ -131,7 +131,7 @@ class CommentsTest(TestCase):
     def expectDeletedComment(self, comment_id, activity_id, return_code):
         commentsCountBefore = models.comments.objects.filter(activity_id=activity_id).count()
 
-        url = get_activityComment_url(activity_id) + "/" + comment_id
+        url = delete_activityComment_url(comment_id)
         response = self.c.delete(url)
         self.assertEqual(response.status_code, 403)
         response = self.c.delete(url, HTTP_AUTHORIZATION=self.authorization)
@@ -191,7 +191,7 @@ class ParticipantsTest(TestCase):
         self.assertEqual(response.status_code, return_code)
 
     def test_deleteMyActivityParticipant(self):
-        self.expectDeleteParticipant("1", "2", 204)
+        self.expectDeleteParticipant("1", "3", 204)
 
     def test_deleteMyselfAsParticipant(self):
         self.expectDeleteParticipant("1", "1", 204)

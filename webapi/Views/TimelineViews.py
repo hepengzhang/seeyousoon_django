@@ -15,4 +15,4 @@ class TimelineView(generics.GenericAPIView,
     def get_queryset(self):
         user = self.request.user
         all_friends_queryset = models.friends.objects.filter(user=user, status__gt=0)
-        return models.user_timeline.objects.exclude(related_user=user).filter(user__in=all_friends_queryset).order_by('-createdDate')[:50]
+        return models.user_timeline.objects.exclude(related_user=user).filter(user__in=all_friends_queryset).order_by('-created_date')[:50]

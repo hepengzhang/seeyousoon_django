@@ -2,9 +2,6 @@ from django.conf.urls import patterns, url, include
 
 from webapi.Views import ActivityViews, AuthViews, PeopleViews, SearchViews, TimelineViews
 
-def SYSInclude(controller):
-    return include('webapi.Controllers.'+controller+'.urls')
-
 urlpatterns = patterns('',
     
     url(r'^docs/', include('rest_framework_swagger.urls')),
@@ -22,10 +19,10 @@ urlpatterns = patterns('',
     
     url(r'^activities/(?P<activity_id>\d+)$', ActivityViews.ActivitiesView.as_view()),
     url(r'^activities/(?P<activity_id>\d+)/comments$', ActivityViews.ActivityCommentsView.as_view()),
-    url(r'^activities/(?P<activity_id>\d+)/comments/(?P<comment_id>\d+)$', ActivityViews.ActivityCommentView.as_view()),
+    url(r'^activity/comments/(?P<comment_id>\d+)$', ActivityViews.ActivityCommentView.as_view()),
     
     url(r'^activities/(?P<activity_id>\d+)/participants$', ActivityViews.ParticipantsView.as_view()),
-    url(r'^activities/(?P<activity_id>\d+)/participants/(?P<entry_id>\d+)$', ActivityViews.ParticipantView.as_view()),
+    url(r'^activities/(?P<activity_id>\d+)/participants/(?P<user_id>\d+)$', ActivityViews.ParticipantView.as_view()),
 
     url(r'^search/people$', SearchViews.SearchPeopleView.as_view()),
 

@@ -126,7 +126,6 @@ class CheckUsernameView(APIView):
         paraDict = request.QUERY_PARAMS
         user = models.user_auth.objects.filter(username=paraDict['username'])
         r = len(user)
-        result = {'username': paraDict['username']}
-        result['available'] = False if r > 0 else True
+        result = {'username': paraDict['username'], 'available': False if r > 0 else True}
         return Response(result)
 

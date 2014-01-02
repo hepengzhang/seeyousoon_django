@@ -123,4 +123,4 @@ class TimelineView(generics.GenericAPIView,
     def get_queryset(self):
         user_id = self.kwargs["user_id"]
         return models.user_timeline.objects.exclude(related_user_id=user_id).filter(user_id=user_id).order_by(
-            '-createdDate')[:50]
+            '-created_date')[:50]

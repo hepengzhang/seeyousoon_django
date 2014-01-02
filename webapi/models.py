@@ -7,7 +7,7 @@ class user_info(models.Model):
     username = models.CharField(max_length=32, unique=True)
     email = models.EmailField(max_length=254)
     last_login = models.DateTimeField(auto_now=True)
-    user_access = models.PositiveSmallIntegerField(default=0)
+    access = models.PositiveSmallIntegerField(default=0)
     longitude = models.DecimalField(max_digits=12, decimal_places=8, default=0)
     latitude = models.DecimalField(max_digits=12, decimal_places=8, default=0)
     gender = models.PositiveSmallIntegerField(default=0)
@@ -15,15 +15,15 @@ class user_info(models.Model):
     wb_id = customField.PositiveBigIntegerField(db_index=True, default=0)
     primary_sns = models.PositiveSmallIntegerField(default=0)
     name = models.CharField(max_length=90, blank=True)
-    user_created_date = models.DateTimeField(auto_now_add=True)
+    created_date = models.DateTimeField(auto_now_add=True)
     phone = models.CharField(max_length=16, blank=True)
 
     def natural_key(self):
         reprdict = {"last_login": self.last_login,
-                    "user_created_date": self.user_created_date,
+                    "created_date": self.created_date,
                     "email": self.email,
                     "phone": self.phone,
-                    "user_access": self.user_access,
+                    "access": self.access,
                     "longitude": self.longitude,
                     "latitude": self.latitude,
                     "gender": self.gender,
@@ -38,10 +38,10 @@ class user_info(models.Model):
 
     def __repr__(self):
         reprdict = {"last_login": self.last_login,
-                    "user_created_date": self.user_created_date,
+                    "created_date": self.created_date,
                     "email": self.email,
                     "phone": self.phone,
-                    "user_access": self.user_access,
+                    "access": self.access,
                     "longitude": self.longitude,
                     "latitude": self.latitude,
                     "gender": self.gender,
@@ -85,7 +85,7 @@ class friends(models.Model):
     friend = customField.BigForeignKey(user_info, related_name="%(class)s_related_friend", on_delete=models.CASCADE)
     together_time = models.IntegerField(default=0)
     entry_id = customField.PositiveBigAutoField(primary_key=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_date = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ("user", "friend")
@@ -98,7 +98,7 @@ class activities(models.Model):
     type = models.PositiveSmallIntegerField(default=0)
     # status : 0, normal; -1: unavailable(deleted)
     status = models.SmallIntegerField(default=0)
-    activity_created_date = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     description = models.CharField(max_length=255, blank=True)
     longitude = models.DecimalField(max_digits=12, decimal_places=8, default=0)
     latitude = models.DecimalField(max_digits=12, decimal_places=8, default=0)
@@ -115,7 +115,7 @@ class activities(models.Model):
                     "access": unicode(self.access),
                     "type": unicode(self.type),
                     "status": unicode(self.status),
-                    "activity_created_date": unicode(self.activity_created_date),
+                    "created_date": unicode(self.created_date),
                     "description": self.description,
                     "longitude": unicode(self.longitude),
                     "latitude": unicode(self.latitude),
@@ -148,7 +148,7 @@ class participants(models.Model):
     longitude = models.DecimalField(max_digits=12, decimal_places=8, default=0)
     latitude = models.DecimalField(max_digits=12, decimal_places=8, default=0)
     entry_id = customField.PositiveBigAutoField(primary_key=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_date = models.DateTimeField(auto_now=True)
 
     def __repr__(self):
         return {"activity": self.activity_id,
@@ -183,4 +183,4 @@ class user_timeline(models.Model):
     related_user = customField.BigForeignKey(user_info, related_name="%(class)s_related_user", on_delete=models.CASCADE,
                                              null=True)
     activity = customField.BigForeignKey(activities, null=True, on_delete=models.CASCADE)
-    createdDate = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_date = models.DateTimeField(auto_now_add=True, db_index=True)

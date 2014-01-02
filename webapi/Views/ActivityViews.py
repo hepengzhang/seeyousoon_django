@@ -108,7 +108,9 @@ class ParticipantView(generics.GenericAPIView,
     queryset = models.participants.objects.all()
 
     def delete(self, request, *args, **kwargs):
-        obj = self.get_object()
+
+        obj = generics.get_object_or_404(self.queryset, activity_id=self.kwargs['activity_id'], participant_id=self.kwargs['user_id'])
+        # obj = self.get_object()
         models.user_timeline.objects.create(user=self.request.user, activity_id=obj.activity_id,
                                             type=models.TIMELINE_QUIT_ACTIVITY)
         obj.delete()

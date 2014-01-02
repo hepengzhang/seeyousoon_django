@@ -25,8 +25,8 @@ def get_activityParticipant_url(activity_id):
     return "/webapi/activities/" + activity_id + "/participants"
 
 
-def get_participant_id_url(activity_id, entry_id):
-    return "/webapi/activities/" + activity_id + "/participants/" + entry_id
+def get_participant_id_url(activity_id, user_id):
+    return "/webapi/activities/" + activity_id + "/participants/" + user_id
 
 
 def get_people_url(user_id):
@@ -55,3 +55,7 @@ def get_people_timeline(user_id):
 
 def get_all_friends_timeline():
     return "/webapi/timeline"
+
+
+def delete_activityComment_url(comment_id):
+    return "/webapi/activity/comments/" + comment_id
