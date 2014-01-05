@@ -3,6 +3,7 @@ from rest_framework import generics, mixins
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
+from rest_framework.exceptions import AuthenticationFailed, ParseError
 
 from webapi import models, SYSMessages
 from webapi.Utils import Serializers
@@ -12,9 +13,11 @@ from datetime import datetime
 
 from passlib.hash import ldap_salted_sha1 as password_hash
 
+
 def generate_accessToken(userID):
     signer = Signer()
     return signer.sign(str(userID) + str(datetime.now()))[-27:]
+
 
 class LoginView(APIView):
     """
@@ -39,11 +42,11 @@ class LoginView(APIView):
             info = info[0]
         elif 'username' in paraDict:
             auth = models.user_auth.objects.select_related().filter(username=paraDict['username'])
-            if len(auth) != 1: return Response(SYSMessages.SYSMESSAGE_ERROR_AUTH_REGISTER_USERNAMENOTEXIST,
-                                               status.HTTP_404_NOT_FOUND)
+            if len(auth) != 1:
+                raise AuthenticationFailed(SYSMessages.SYSMESSAGE_ERROR_AUTH_LOGIN_USERNAMENOTEXIST)
             auth = auth[0]
-            if auth.password != paraDict['password']: return Response(
-                SYSMessages.SYSMESSAGE_ERROR_AUTH_REGISTER_WRONGPASSWORD, status.HTTP_406_NOT_ACCEPTABLE)
+            if not password_hash.verify(paraDict['password'], auth.password):
+                raise AuthenticationFailed(SYSMessages.SYSMESSAGE_ERROR_AUTH_LOGIN_WRONGPASSWORD)
             info = auth.user
 
         ##update access_token
@@ -76,13 +79,13 @@ class SignupView(generics.GenericAPIView,
     def post(self, request, *args, **kwargs):
 
         serializer = self.get_serializer(data=self.request.DATA)
+        print request.DATA
 
         if serializer.is_valid():
             serializer.object.username = self.request.DATA['username']
             exist = models.user_auth.objects.filter(username=serializer.object.username).exists()
             if exist:
-                return Response(SYSMessages.SYSMESSAGE_ERROR_AUTH_REGISTER_USERNAMEUNAVAILABLE,
-                                status.HTTP_406_NOT_ACCEPTABLE)
+                raise AuthenticationFailed(SYSMessages.SYSMESSAGE_ERROR_AUTH_REGISTER_USERNAMEUNAVAILABLE)
 
             user_info = serializer.save(force_insert=True)
 
@@ -97,7 +100,8 @@ class SignupView(generics.GenericAPIView,
             search_index = "{} {}".format(user_info.username, user_info.name)
             models.user_search.objects.create(user=user_info, search_index=search_index)
 
-            result = {"user":serializer.data, "access_token":auth.access_token}
+            result = {"access_token": auth.access_token}
+            result.update(serializer.data)
 
             return Response(result, status=status.HTTP_201_CREATED)
 

@@ -57,7 +57,7 @@ class user_info(models.Model):
 
 class user_auth(models.Model):
     username = models.CharField(max_length=32, unique=True)
-    password = models.CharField(max_length=32)
+    password = models.CharField(max_length=128)
     access_token = models.CharField(max_length=27)
     user = customField.BigForeignKey(user_info, primary_key=True, on_delete=models.CASCADE)
 
