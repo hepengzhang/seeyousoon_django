@@ -5,16 +5,14 @@ Hepeng's Dev IDE: Eclipse+PyDev
 Current Server structure:
 * EC2 instance: AWS Micro Linux AMI
 * database: AWS RDS(mysql)
-* web server: Nginx + uwsgi + Django 1.5.1
-    
-Desired structure:
+* web server: Nginx + uwsgi + Django 1.6
 
-- Try to switch to Nginx + uwsgi + Django   [ Done ]
-- Continuous deployment?
+To do list:
+- Continuous deployment
+- API Documentation (Swagger)
+- Automatic package dependencies (virtualenv and pip):
 
-Edit README.md to specify your task here.
+    http://stackoverflow.com/questions/12069336/does-django-have-an-equivalent-of-railss-bundle-install
 
-1. Use cases [Hepeng is working on this]
-2. Proposal [Hepeng is working on this]
-3. API Doxygen [ ]
-4. .......
+    http://stackoverflow.com/questions/8726207/what-are-the-python-equivalents-to-rubys-bundler-perls-carton
+
