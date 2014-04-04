@@ -99,8 +99,12 @@ class ParticipantPermission(ActivityFriendRead):
         isOwner = obj.activity.creator_id == request.user.user_id 
         return isSelf or isOwner
         
-        
 class CreatorModify(AuthPermission):
 
     def has_object_permission(self, request, view, obj):
         return obj.creator_id == request.user.user_id
+    
+class PNSPermission(AuthPermission):
+    def has_permission(self, request, view):
+        if not AuthPermission.has_permission(self, request, view): return False
+        return long(view.kwargs["user_id"]) == request.user.user_id

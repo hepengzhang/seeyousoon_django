@@ -13,7 +13,6 @@ from datetime import datetime
 
 from passlib.hash import ldap_salted_sha1 as password_hash
 
-
 def generate_accessToken(userID):
     signer = Signer()
     return signer.sign(str(userID) + str(datetime.now()))[-27:]
@@ -61,9 +60,9 @@ class LoginView(APIView):
         # performance blocker, about 20ms on localhost
         info.save()
 
+        result = {"access_token": auth.access_token}
         serializer = Serializers.UserSerializer(info)
-        result = {"user_info": serializer.data,
-                  "access_token": auth.access_token}
+        result.update(serializer.data)
 
         return Response(result)
 
@@ -79,7 +78,6 @@ class SignupView(generics.GenericAPIView,
     def post(self, request, *args, **kwargs):
 
         serializer = self.get_serializer(data=self.request.DATA)
-        print request.DATA
 
         if serializer.is_valid():
             serializer.object.username = self.request.DATA['username']

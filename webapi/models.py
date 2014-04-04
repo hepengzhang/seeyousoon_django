@@ -8,8 +8,8 @@ class user_info(models.Model):
     email = models.EmailField(max_length=254)
     last_login = models.DateTimeField(auto_now=True)
     access = models.PositiveSmallIntegerField(default=0)
-    longitude = models.DecimalField(max_digits=12, decimal_places=8, default=0)
-    latitude = models.DecimalField(max_digits=12, decimal_places=8, default=0)
+    longitude = models.FloatField(default=-1000)
+    latitude = models.FloatField(default=-1000)
     gender = models.PositiveSmallIntegerField(default=0)
     fb_id = customField.PositiveBigIntegerField(db_index=True, default=0)
     wb_id = customField.PositiveBigIntegerField(db_index=True, default=0)
@@ -17,6 +17,7 @@ class user_info(models.Model):
     name = models.CharField(max_length=90, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     phone = models.CharField(max_length=16, blank=True)
+    numOfActivities = models.IntegerField(default=0)
 
     def natural_key(self):
         reprdict = {"last_login": self.last_login,
@@ -72,12 +73,12 @@ class user_search(models.Model):
 
 class push_notification(models.Model):
     user = customField.BigForeignKey(user_info, primary_key=True, on_delete=models.CASCADE)
-    device_id = models.CharField(max_length=32)
+    device_id = models.CharField(max_length=64)
     push_token = models.CharField(max_length=64)
     config = models.PositiveSmallIntegerField(default=0)
     friend_requests = models.PositiveIntegerField(default=0)
     activities = models.PositiveIntegerField(default=0)
-
+    updated_date = models.DateTimeField(auto_now=True)
 
 class friends(models.Model):
     status = models.PositiveSmallIntegerField(default=0)
@@ -86,6 +87,9 @@ class friends(models.Model):
     together_time = models.IntegerField(default=0)
     entry_id = customField.PositiveBigAutoField(primary_key=True)
     updated_date = models.DateTimeField(auto_now=True)
+    
+    def source_friend(self):
+        return self.friend if self.status > 0 else self.user;
 
     class Meta:
         unique_together = ("user", "friend")

@@ -37,6 +37,8 @@ class SYSAPIAuthentication(authentication.BaseAuthentication):
             auth = models.user_auth.objects.get(user_id=userID, access_token=token)
         except models.user_auth.DoesNotExist:
             raise exceptions.AuthenticationFailed('Invalid userID/token pair')
+        except ValueError:
+            raise exceptions.AuthenticationFailed('Invalid Authortization form')
 
         return (auth.user, token)
         

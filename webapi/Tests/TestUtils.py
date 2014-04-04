@@ -59,3 +59,8 @@ def get_all_friends_timeline():
 
 def delete_activityComment_url(comment_id):
     return "/webapi/activity/comments/" + comment_id
+
+
+def get_people_pns(user_id):
+    return "/webapi/people/" + user_id + "/pns"
+

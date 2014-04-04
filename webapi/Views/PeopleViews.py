@@ -1,11 +1,11 @@
-from rest_framework import mixins, generics
-from rest_framework.response import Response
-from rest_framework import status
-
-from webapi import models
-from webapi.Utils import Serializers, Permissions
-
 from django.db.models import Q
+from rest_framework import mixins, generics, status
+from rest_framework.response import Response
+from webapi import models
+from webapi.Utils import Serializers, Permissions, PushNotification, \
+    GeoCalculate
+
+
 
 
 class UserView(generics.GenericAPIView,
@@ -20,8 +20,19 @@ class UserView(generics.GenericAPIView,
         return self.retrieve(request, *args, **kwargs)
 
     def put(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
-
+        response = self.partial_update(request, *args, **kwargs)
+        if 'longitude' in request.DATA and 'latitude' in request.DATA:
+            obj = self.get_object_or_none()
+            friends = models.friends.objects.filter(user_id=obj.user_id, status__gt=0)
+            friends = [f.friend.user_id for f in friends]
+            boundsLat = GeoCalculate.boundsOfLat(self.object.latitude, 500)
+            boundsLong = GeoCalculate.boundsOfLong(self.object.longitude, 500)
+            needNotify = models.user_info.objects.filter(user_id__in=friends, latitude__range=boundsLat, longitude__range=boundsLong)
+            friends_ids = [u.user_id for u in needNotify]
+            for uid in friends_ids:
+                print "notified", uid
+                PushNotification.SYSNotify(uid, obj.username + " is around you.")
+        return response
 
 class FriendsView(mixins.ListModelMixin,
                   mixins.DestroyModelMixin,
@@ -105,7 +116,11 @@ class ActivitiesView(generics.GenericAPIView,
         model.creator_id = self.request.user.user_id
 
     def post_save(self, obj, created=False):
+        if not created: return;
         models.user_timeline.objects.create(user=self.request.user, activity=obj, type=models.TIMELINE_CREATE_ACTIVITY)
+        user = models.user_info.objects.get(user_id=self.request.user.user_id)
+        user.numOfActivities += 1;
+        user.save();
 
     def get_queryset(self):
         user_id = self.kwargs["user_id"]
@@ -124,3 +139,17 @@ class TimelineView(generics.GenericAPIView,
         user_id = self.kwargs["user_id"]
         return models.user_timeline.objects.exclude(related_user_id=user_id).filter(user_id=user_id).order_by(
             '-created_date')[:50]
+            
+class PNSView(generics.GenericAPIView,
+               mixins.UpdateModelMixin):
+    
+    permission_classes = (Permissions.PNSPermission, )
+    serializer_class = Serializers.PushNotificationSerializer
+    queryset = models.push_notification.objects.all()
+    lookup_field = 'user_id'
+    
+    def pre_valid_model(self, serializer, model):
+        model.user = self.request.user
+    
+    def put(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)

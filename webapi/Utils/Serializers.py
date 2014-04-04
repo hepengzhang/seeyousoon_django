@@ -44,7 +44,7 @@ class ActivitySerializer(DynamicFieldsModelSerializer):
         read_only_fields = ('activity_id', 'created_date', 'num_of_participants', 'num_of_comments')
 
 class FriendsSerializer(DynamicFieldsModelSerializer):
-    friend = UserSerializer()
+    friend = UserSerializer(source='source_friend')
     class Meta:
         model = models.friends
         fields = ("friend", "status", "together_time", "updated_date")
@@ -62,3 +62,8 @@ class ParticipantSerializer(DynamicFieldsModelSerializer):
 class TimelineSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = models.user_timeline
+        
+class PushNotificationSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = models.push_notification
+        read_only_fields = ('user', )

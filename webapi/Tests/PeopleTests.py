@@ -3,7 +3,7 @@ from django.test.client import Client
 import simplejson as json
 
 from TestUtils import get_authorization_credential, get_people_url, get_friends_url, get_friends_id_url, \
-    get_activities_url, add_friends_url
+    get_activities_url, add_friends_url, get_people_pns
 
 from webapi import models
 
@@ -113,11 +113,35 @@ class friendsTest(TestCase):
     def test_approveFriendRequest(self):
         self.expectAddFriend('1', '2', 201, 0)
         self.expectAddFriend('2', '1', 201, 1)
+        
 
+class peoplePNSTest(TestCase):
+    fixtures = ['TestFixtures.json']
+    authorization = "1 hepengzhangAT"
+    c = Client()
 
+    def expectUpdate(self, user_id, push_token, device_id, return_code):
+        url = get_people_pns(user_id)
+        data = json.dumps({'push_token':push_token, 'device_id':device_id})
+        response = self.c.put(url, data, content_type='application/json', HTTP_AUTHORIZATION=self.authorization)
+        self.assertEqual(response.status_code, return_code)
+        if return_code > 299 or return_code < 200: return
+        response = json.loads(response.content)
+        self.assertEqual(response['push_token'], push_token) 
+        self.assertEqual(response['device_id'], device_id)
+        
+    def test_updateOthers(self):
+        self.expectUpdate("2", "push_token", "device_id", 403)
+        
+    def test_updateMyself(self):
+        self.expectUpdate("1", "push_token", 'device_id', 201)
+        self.expectUpdate("1", "push_token", 'device_id', 200)
+        
+        
 class peopleActivitiesTest(TestCase):
     fixtures = ['TestFixtures.json']
     authentication = "1 hepengzhangAT"
+    c = Client()
 
     def expect(self, user_id, return_code, numOfActivities):
         url = get_activities_url(user_id)
@@ -129,16 +153,16 @@ class peopleActivitiesTest(TestCase):
 
     def expectCreate(self, user_id, return_code, contents, expected_contents):
         url = get_activities_url(user_id)
+        user = models.user_info.objects.get(user_id=user_id)
+        numOfActivities = user.numOfActivities
         response = self.c.post(url, data=json.dumps(contents), content_type='application/json',
                                HTTP_AUTHORIZATION=self.authentication)
         self.assertEqual(response.status_code, return_code)
         if return_code != 200: return
         response = json.loads(response.content)
         self.assertDictContainsSubset(expected_contents, response)
+        self.assertEqual(numOfActivities+1, user.numOfActivities)
         pass
-
-    def setUp(self):
-        self.c = Client()
 
     def test_getMyActivities(self):
         self.expect("1", 200, 1)

@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     url(r'^people/(?P<user_id>\d+)/friends$', PeopleViews.AddFriendsView.as_view()),
     url(r'^people/(?P<user_id>\d+)/friends/(?P<friend_id>\d+)$', PeopleViews.FriendView.as_view()),
     url(r'^people/(?P<user_id>\d+)/timeline$', PeopleViews.TimelineView.as_view()),
+    url(r'^people/(?P<user_id>\d+)/pns$', PeopleViews.PNSView.as_view()),
 
     url(r'^people/(?P<user_id>\d+)/activities$', PeopleViews.ActivitiesView.as_view()),
     
