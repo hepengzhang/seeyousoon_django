@@ -95,7 +95,7 @@ class SignupView(generics.GenericAPIView,
             auth.save()
 
             ### user search
-            search_index = "{} {}".format(user_info.username, user_info.name)
+            search_index = "{0} {1}".format(user_info.username, user_info.name)
             models.user_search.objects.create(user=user_info, search_index=search_index)
 
             result = {"access_token": auth.access_token}
