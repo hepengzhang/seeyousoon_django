@@ -11,8 +11,8 @@ class Command(BaseCommand):
             app_name = self.__module__.split('.')[0]
             user_search_table = "{0}_{1}".format(app_name, 'user_search')
             column_name = 'search_index'
-            index_name = "{}_{}_fulltext".format(user_search_table, column_name)
-            fulltext_create_query = "CREATE FULLTEXT INDEX `{}` ON `{}` ({});".format(index_name, user_search_table,
+            index_name = "{0}_{1}_fulltext".format(user_search_table, column_name)
+            fulltext_create_query = "CREATE FULLTEXT INDEX `{0}` ON `{1}` ({2});".format(index_name, user_search_table,
                                                                                       column_name)
             c = connection.cursor()
             try:
