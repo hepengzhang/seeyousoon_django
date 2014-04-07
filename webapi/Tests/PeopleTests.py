@@ -109,6 +109,7 @@ class friendsTest(TestCase):
 
     def test_postFriendRequest(self):
         self.expectAddFriend('1', '2', 201, 0)
+        self.expectAddFriend('1', '2', 201, 0)
 
     def test_approveFriendRequest(self):
         self.expectAddFriend('1', '2', 201, 0)

@@ -70,20 +70,29 @@ class AddFriendsView(mixins.ListModelMixin,
         approve = models.friends.objects.filter(user_id=requested_user_id, friend_id=current_user_id).count()
         if approve > 0:
             r1 = models.friends.objects.get_or_create(user_id=requested_user_id, friend_id=current_user_id)[0]
-            r1.status = 1
             r2 = models.friends.objects.get_or_create(friend_id=requested_user_id, user_id=current_user_id)[0]
-            r2.status = 1
-            r1.save()
-            r2.save()
-            models.user_timeline.objects.create(user_id=current_user_id, related_user_id=requested_user_id,
+            if r1.status == 0 or r2.status == 0:
+                r1.status = 1
+                r2.status = 1
+                r1.save()
+                r2.save()
+                models.user_timeline.objects.create(user_id=current_user_id, related_user_id=requested_user_id,
                                                 type=models.TIMELINE_BECOME_FRIENDS)
-            models.user_timeline.objects.create(related_user_id=current_user_id, user_id=requested_user_id,
+                models.user_timeline.objects.create(related_user_id=current_user_id, user_id=requested_user_id,
                                                 type=models.TIMELINE_BECOME_FRIENDS)
-        else:
-            models.friends.objects.create(user_id=current_user_id, friend_id=requested_user_id, status=0)
-
-        return Response(status=status.HTTP_201_CREATED)
-
+            
+            serializer = Serializers.FriendsSerializer(r2)
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        
+        requested = models.friends.objects.filter(user_id=current_user_id, friend_id=requested_user_id).count()
+        if requested > 0:
+            r2 = models.friends.objects.get(user_id=current_user_id, friend_id=requested_user_id)
+            serializer = Serializers.FriendsSerializer(r2)
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        
+        r2 = models.friends.objects.create(user_id=current_user_id, friend_id=requested_user_id, status=0)
+        serializer = Serializers.FriendsSerializer(r2)
+        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
 class FriendView(mixins.DestroyModelMixin,
                  generics.GenericAPIView):
