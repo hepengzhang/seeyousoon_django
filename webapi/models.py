@@ -14,7 +14,7 @@ class user_info(models.Model):
     fb_id = customField.PositiveBigIntegerField(db_index=True, default=0)
     wb_id = customField.PositiveBigIntegerField(db_index=True, default=0)
     primary_sns = models.PositiveSmallIntegerField(default=0)
-    name = models.CharField(max_length=90, blank=True)
+    name = models.CharField(max_length=32, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     phone = models.CharField(max_length=16, blank=True)
     numOfActivities = models.IntegerField(default=0)

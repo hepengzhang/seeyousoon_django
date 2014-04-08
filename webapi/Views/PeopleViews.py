@@ -20,7 +20,11 @@ class UserView(generics.GenericAPIView,
         return self.retrieve(request, *args, **kwargs)
 
     def put(self, request, *args, **kwargs):
+        user = self.get_object_or_none()
+        needUpdateName = 'name' in request.DATA and user.name != request.DATA['name']
         response = self.partial_update(request, *args, **kwargs)
+        if (response.status_code > 399):
+            return response
         if 'longitude' in request.DATA and 'latitude' in request.DATA:
             obj = self.get_object_or_none()
             friends = models.friends.objects.filter(user_id=obj.user_id, status__gt=0)
@@ -32,6 +36,9 @@ class UserView(generics.GenericAPIView,
             for uid in friends_ids:
                 print "notified", uid
                 PushNotification.SYSNotify(uid, obj.username + " is around you.")
+        if needUpdateName:
+            search_index = u"{0} {1}".format(user.username, request.DATA['name'])
+            models.user_search.objects.filter(user_id=user.user_id).update(search_index=search_index)
         return response
 
 class FriendsView(mixins.ListModelMixin,
