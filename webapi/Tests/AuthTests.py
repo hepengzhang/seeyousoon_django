@@ -4,11 +4,13 @@ import simplejson as json
 from webapi import models
 
 from rest_framework import status
+from TestUtils import get_authorization_credential
+
 
 API_LOGIN_URL = "/webapi/auth/login"
 API_REGISTER_URL = "/webapi/auth/register"
 API_CHECKUSERNAME_URL = "/webapi/auth/checkusername"
-
+API_LOGOUT_URL = "/webapi/auth/logout"
 class registerTest(TestCase):
 
     fixtures = ['AuthTestFixtures.json']
@@ -74,6 +76,22 @@ class loginTest(TestCase):
 #         self.assertEqual(response.content, SYSMessages.SYSMESSAGE_ERROR_AUTH_REGISTER_WRONGPASSWORD)
         pass
     
+class logoutTest(TestCase):
+    
+    fixtures = ['TestFixtures.json']
+    def setUp(self):
+        self.c = Client()
+    
+    def test_logout(self):
+        old_at = models.user_auth.objects.get(user_id=1).access_token
+        auth = get_authorization_credential(self.fixtures, 1)
+        response = self.c.post(API_LOGOUT_URL, HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+        new_at = models.user_auth.objects.get(user_id=1).access_token
+        self.assertNotEqual(old_at, new_at)
+        apns_count = models.push_notification.objects.filter(user_id=1).count();
+        self.assertEqual(apns_count, 0)
+
 class checkUsernameTest(TestCase):
     fixtures = ['AuthTestFixtures.json']
     def setUp(self):

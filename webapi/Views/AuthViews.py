@@ -6,7 +6,7 @@ from rest_framework import permissions
 from rest_framework.exceptions import AuthenticationFailed, ParseError
 
 from webapi import models, SYSMessages
-from webapi.Utils import Serializers
+from webapi.Utils import Serializers, Permissions as webapi_permissions
 
 from django.core.signing import Signer
 from datetime import datetime
@@ -78,6 +78,8 @@ class SignupView(generics.GenericAPIView,
     def post(self, request, *args, **kwargs):
 
         serializer = self.get_serializer(data=self.request.DATA)
+        if not 'password' in self.request.DATA:
+            return ParseError('password is missing')
 
         if serializer.is_valid():
             serializer.object.username = self.request.DATA['username']
@@ -107,15 +109,18 @@ class SignupView(generics.GenericAPIView,
 
 
 class LogoutView(APIView):
-    """
-    Login current user
-    """
+    
+    permission_classes = (webapi_permissions.AuthPermission, )
 
-    def get(self, request):
-        users = models.user_info.objects.all();
-        serializer = Serializers.UserSerializer(users, many=True)
-        #         users = [u for u in users]
-        return Response(serializer.data)
+    def post(self, request, *args, **kwargs):
+        user_auth = models.user_auth.objects.get(user_id=self.request.user.user_id)
+        user_auth.access_token = generate_accessToken(user_auth.username)
+        user_auth.save()
+        print user_auth.access_token
+        
+        models.push_notification.objects.filter(user_id=user_auth.user_id).delete()
+        
+        return Response(status=status.HTTP_200_OK)
 
 
 class CheckUsernameView(APIView):

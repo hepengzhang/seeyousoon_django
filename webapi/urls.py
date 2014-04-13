@@ -7,6 +7,7 @@ urlpatterns = patterns('',
     url(r'^docs/', include('rest_framework_swagger.urls')),
     url(r'^auth/login$', AuthViews.LoginView.as_view()),
     url(r'^auth/register$', AuthViews.SignupView.as_view()),
+    url(r'^auth/logout', AuthViews.LogoutView.as_view()),
     url(r'^auth/checkusername$', AuthViews.CheckUsernameView.as_view()),
 
     url(r'^people/(?P<user_id>\d+)$', PeopleViews.UserView.as_view()),
